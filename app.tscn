@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_svddc")
 
-[node name="GridContainer" type="GridContainer" parent="."]
+[node name="MainGrid" type="GridContainer" parent="."]
 layout_mode = 0
 offset_left = -327.0
 offset_top = -322.0
@@ -19,7 +19,7 @@ offset_right = 318.0
 offset_bottom = 323.0
 columns = 4
 
-[node name="MarginContainer2" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer2" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_right = 159.0
 offset_bottom = 159.0
@@ -30,7 +30,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer2"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer2"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -40,7 +40,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 163.0
 offset_right = 321.0
@@ -52,7 +52,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -62,7 +62,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer3" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer3" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 325.0
 offset_right = 483.0
@@ -74,7 +74,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer3"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer3"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -84,7 +84,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer4" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer4" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 487.0
 offset_right = 645.0
@@ -96,7 +96,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer4"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer4"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -106,7 +106,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer5" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer5" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_top = 163.0
 offset_right = 159.0
@@ -118,7 +118,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer5"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer5"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -128,7 +128,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer6" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer6" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 163.0
 offset_top = 163.0
@@ -141,7 +141,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer6"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer6"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -151,7 +151,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer7" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer7" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 325.0
 offset_top = 163.0
@@ -164,7 +164,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer7"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer7"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -174,7 +174,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer8" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer8" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 487.0
 offset_top = 163.0
@@ -187,7 +187,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer8"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer8"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -197,7 +197,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer9" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer9" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_top = 325.0
 offset_right = 159.0
@@ -209,7 +209,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer9"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer9"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -219,7 +219,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer10" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer10" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 163.0
 offset_top = 325.0
@@ -232,7 +232,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer10"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer10"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -242,7 +242,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer11" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer11" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 325.0
 offset_top = 325.0
@@ -255,7 +255,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer11"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer11"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -265,7 +265,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer12" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer12" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 487.0
 offset_top = 325.0
@@ -278,7 +278,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer12"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer12"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -288,7 +288,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer13" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer13" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_top = 487.0
 offset_right = 159.0
@@ -300,7 +300,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer13"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer13"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -310,7 +310,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer14" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer14" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 163.0
 offset_top = 487.0
@@ -323,7 +323,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer14"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer14"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -333,7 +333,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer15" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer15" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 325.0
 offset_top = 487.0
@@ -346,7 +346,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer15"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer15"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -356,7 +356,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer16" type="MarginContainer" parent="GridContainer"]
+[node name="MarginContainer16" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 487.0
 offset_top = 487.0
@@ -369,7 +369,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="GridContainer/MarginContainer16"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer16"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0

@@ -6,13 +6,13 @@ namespace V2;
 
 public delegate void BlockSpawnedHandler(int gridXPosition, int gridYPosition, int blockValue);
 
-public class GameGrid {
+public class LogicGrid {
     private List<List<Cell>> _grid = new();
     private Random _rng = new Random(); // todo: inject
 
     public event BlockSpawnedHandler BlockSpawned;
 
-    public GameGrid(int gridDimension) {
+    public LogicGrid(int gridDimension) {
         for (var i = 0; i < gridDimension; i++) {
             List<Cell> row = new();
             for (var j = 0; j < gridDimension; j++) {

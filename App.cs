@@ -1,19 +1,22 @@
 using Godot;
-using System;
 using V2;
 
 public partial class App : Control {
+    private const int GridDimension = 4;
     private Button _startGameButton;
-    private GameGrid _gameGrid;
+    private GridContainer _mainGrid;
+
+    private LogicGrid _logicGrid;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
         _startGameButton = FindChild("StartGameButton") as Button;
+        _mainGrid = FindChild("MainGrid") as GridContainer;
         _startGameButton.Pressed += HandleStartButtonClicked;
-        _gameGrid = new GameGrid(4);
-        _gameGrid.BlockSpawned += HandleBlockSpawned;
+        _logicGrid = new LogicGrid(GridDimension);
+        _logicGrid.BlockSpawned += HandleBlockSpawned;
     }
-    
+
     // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta) { }
 
@@ -24,19 +27,19 @@ public partial class App : Control {
         switch (keyboardEvent.Keycode) {
             case Key.Left:
                 GD.Print("Move left");
-                _gameGrid.UpdateWithMove(MoveDirection.Left);
+                _logicGrid.UpdateWithMove(MoveDirection.Left);
                 break;
             case Key.Up:
                 GD.Print("Move up");
-                _gameGrid.UpdateWithMove(MoveDirection.Up);
+                _logicGrid.UpdateWithMove(MoveDirection.Up);
                 break;
             case Key.Right:
                 GD.Print("Move right");
-                _gameGrid.UpdateWithMove(MoveDirection.Right);
+                _logicGrid.UpdateWithMove(MoveDirection.Right);
                 break;
             case Key.Down:
                 GD.Print("Move down");
-                _gameGrid.UpdateWithMove(MoveDirection.Down);
+                _logicGrid.UpdateWithMove(MoveDirection.Down);
                 break;
         }
     }
@@ -47,5 +50,7 @@ public partial class App : Control {
 
     private void HandleBlockSpawned(int row, int col, int value) {
         GD.Print($"Block in row {row}, column {col} was spawned with value {value}");
+        BlockNode blockNode = new(value);
+        _mainGrid.GetChild(row + GridDimension * col).AddChild(blockNode);
     }
 }
