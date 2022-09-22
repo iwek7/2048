@@ -56,7 +56,7 @@ public partial class App : Control {
         
         GD.Print($"Moving block from {initialPosition} to {targetPosition}");
         var initialGridNode = getGridNode(initialPosition);
-        var blockToMove = initialGridNode.FindChild(BlockNodeName);
+        var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
 
         var targetGridNode = getGridNode(targetPosition);
