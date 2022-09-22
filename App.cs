@@ -55,8 +55,9 @@ public partial class App : Control {
     private void HandleBlockSpawned(int row, int col, int value) {
         GD.Print($"Block in row {row}, column {col} was spawned with value {value}");
         var blockNode = (BlockNode)_blockScene.Instantiate();
-        // here order is important
         var gridCellNode = (Control)_mainGrid.GetChild(row + GridDimension * col);
+        // Here order is important, we need to first add block to the tree so that _ready is called
+        // and children nodes are assigned to block node variables.
         gridCellNode.AddChild(blockNode);
         blockNode.Resize(((ColorRect)gridCellNode.FindChild("ColorRect")).Size);
         blockNode.Value = value;
