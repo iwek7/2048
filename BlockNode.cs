@@ -20,11 +20,7 @@ public partial class BlockNode : Node2D {
             _colorRect.Color = _colorMap[value];
         }
     }
-
-    public BlockNode(int value) {
-        Value = value;
-    }
-
+    
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
         _colorRect = FindChild("ColorRect") as ColorRect;

@@ -8,6 +8,8 @@ public partial class App : Control {
 
     private LogicGrid _logicGrid;
 
+    private PackedScene _blockScene;
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
         _startGameButton = FindChild("StartGameButton") as Button;
@@ -15,6 +17,8 @@ public partial class App : Control {
         _startGameButton.Pressed += HandleStartButtonClicked;
         _logicGrid = new LogicGrid(GridDimension);
         _logicGrid.BlockSpawned += HandleBlockSpawned;
+
+        _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -50,7 +54,9 @@ public partial class App : Control {
 
     private void HandleBlockSpawned(int row, int col, int value) {
         GD.Print($"Block in row {row}, column {col} was spawned with value {value}");
-        BlockNode blockNode = new(value);
+        var blockNode = (BlockNode)_blockScene.Instantiate();
+        // here order is important
         _mainGrid.GetChild(row + GridDimension * col).AddChild(blockNode);
+        blockNode.Value = value;
     }
 }
