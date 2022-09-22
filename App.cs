@@ -12,8 +12,8 @@ public partial class App : Control {
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
-        _startGameButton = FindChild("StartGameButton") as Button;
-        _mainGrid = FindChild("MainGrid") as GridContainer;
+        _startGameButton = (Button)FindChild("StartGameButton");
+        _mainGrid = (GridContainer)FindChild("MainGrid");
         _startGameButton.Pressed += HandleStartButtonClicked;
         _logicGrid = new LogicGrid(GridDimension);
         _logicGrid.BlockSpawned += HandleBlockSpawned;
@@ -56,7 +56,9 @@ public partial class App : Control {
         GD.Print($"Block in row {row}, column {col} was spawned with value {value}");
         var blockNode = (BlockNode)_blockScene.Instantiate();
         // here order is important
-        _mainGrid.GetChild(row + GridDimension * col).AddChild(blockNode);
+        var gridCellNode = (Control)_mainGrid.GetChild(row + GridDimension * col);
+        gridCellNode.AddChild(blockNode);
+        blockNode.Resize(((ColorRect)gridCellNode.FindChild("ColorRect")).Size);
         blockNode.Value = value;
     }
 }
