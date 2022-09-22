@@ -52,10 +52,10 @@ public partial class App : Control {
         GD.Print("Starting game!");
     }
 
-    private void HandleBlockSpawned(int row, int col, int value) {
-        GD.Print($"Block in row {row}, column {col} was spawned with value {value}");
+    private void HandleBlockSpawned(GridPosition gridPosition, int value) {
+        GD.Print($"Block in row {gridPosition.XPos}, column {gridPosition.YPos} was spawned with value {value}");
         var blockNode = (BlockNode)_blockScene.Instantiate();
-        var gridCellNode = (Control)_mainGrid.GetChild(row + GridDimension * col);
+        var gridCellNode = (Control)_mainGrid.GetChild(gridPosition.XPos + GridDimension * gridPosition.YPos);
         // Here order is important, we need to first add block to the tree so that _ready is called
         // and children nodes are assigned to block node variables.
         gridCellNode.AddChild(blockNode);

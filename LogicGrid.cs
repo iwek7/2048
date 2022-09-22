@@ -4,7 +4,12 @@ using System.Reflection.Metadata;
 
 namespace V2;
 
-public delegate void BlockSpawnedHandler(int gridXPosition, int gridYPosition, int blockValue);
+public delegate void BlockSpawnedHandler(GridPosition gridPosition, int blockValue);
+
+public record GridPosition {
+    public int XPos { get; init; }
+    public int YPos { get; init; }
+}
 
 public class LogicGrid {
     private List<List<Cell>> _grid = new();
@@ -16,7 +21,13 @@ public class LogicGrid {
         for (var i = 0; i < gridDimension; i++) {
             List<Cell> row = new();
             for (var j = 0; j < gridDimension; j++) {
-                row.Add(new Cell(i, j));
+                row.Add(new Cell(
+                        new GridPosition {
+                            XPos = i,
+                            YPos = j
+                        }
+                    )
+                );
             }
 
             _grid.Add(row);
@@ -33,7 +44,7 @@ public class LogicGrid {
             var newBlock = new Block(2);
             var cell = cells[_rng.Next(cells.Count)];
             cell.assignBlock(newBlock);
-            BlockSpawned?.Invoke(cell.XPos, cell.YPos, newBlock.Value);
+            BlockSpawned?.Invoke(cell.GridPosition, newBlock.Value);
         }
     }
 
@@ -51,13 +62,11 @@ public class LogicGrid {
     }
 
     class Cell {
-        public int XPos { get; }
-        public int YPos { get; }
+        public GridPosition GridPosition { get; }
         public Block Block;
 
-        internal Cell(int xPos, int yPos) {
-            XPos = xPos;
-            YPos = yPos;
+        internal Cell(GridPosition gridPosition) {
+            GridPosition = gridPosition;
         }
 
         internal bool IsEmpty() {
