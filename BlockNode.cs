@@ -5,7 +5,8 @@ using System.Collections.Generic;
 public partial class BlockNode : ColorRect {
     private static Dictionary<int, Color> _colorMap = new() {
         [2] = Colors.Red,
-        [4] = Colors.Blue
+        [4] = Colors.Blue,
+        [8] = Colors.Green
     };
 
     private Label _label;
@@ -27,6 +28,7 @@ public partial class BlockNode : ColorRect {
         _label = (Label)FindChild("Label");
     }
 
+    // todo: this is useless
     public void Resize(Vector2 newSize) {
         Size = newSize;
     }

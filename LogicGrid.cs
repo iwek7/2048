@@ -9,6 +9,12 @@ public delegate void BlockSpawnedHandler(GridPosition gridPosition, int blockVal
 
 public delegate void BlockMovedHandler(GridPosition initialPosition, GridPosition targetPosition);
 
+public delegate void BlockMergeHandler(
+    GridPosition mergedBlockInitialPosition,
+    GridPosition mergeReceiverPosition,
+    int newBlockValue
+);
+
 public record GridPosition {
     // todo use uint here
     public int Row { get; init; }
@@ -21,6 +27,7 @@ public class LogicGrid {
 
     public event BlockSpawnedHandler BlockSpawned;
     public event BlockMovedHandler BlockMoved;
+    public event BlockMergeHandler BlocksMerged;
 
     public LogicGrid(int gridDimension) {
         for (var i = 0; i < gridDimension; i++) {
@@ -45,22 +52,48 @@ public class LogicGrid {
                 break;
             case MoveDirection.Left:
                 foreach (var row in _grid) {
-                    // we don't move first column anyways
+                    // this is pointer to first free cell (without block) in a row
+                    // -1 value means there is no free cell
                     var firstFreeCol = -1;
                     for (var colIdx = 0; colIdx < _grid.Count; colIdx++) {
-                        if (row[colIdx].IsEmpty() && firstFreeCol == -1) {
-                            firstFreeCol = colIdx;
+                        if (row[colIdx].IsEmpty()) {
+                            if (firstFreeCol == -1) {
+                                firstFreeCol = colIdx;
+                            }
+                            continue;
                         }
-
-                        if (!row[colIdx].IsEmpty()) {
-                            if (firstFreeCol > -1) {
-                                var fromCell = row[colIdx];
-                                var toCell = row[firstFreeCol];
-                                fromCell.moveBlockTo(toCell);
-                                firstFreeCol = colIdx; // block was just moved from current column
-                                BlockMoved?.Invoke(fromCell.GridPosition, toCell.GridPosition);
+                        else {
+                            var fromCell = row[colIdx];
+                            // handle merge
+                            // check if cell before one that is free to move to has matching number
+                            // if yes merge happens
+                            if (colIdx > 0) {
+                                // find nearest cell
+                                Cell mergeCandidateCell = null;
+                                for (var i = colIdx - 1; i >= 0 ; i--) {
+                                    if (!row[i].IsEmpty()) {
+                                        mergeCandidateCell = row[i];
+                                        break;
+                                    }
+                                }
+                        
+                                if (mergeCandidateCell != null && mergeCandidateCell.Block.mergeWith(fromCell.Block)) {
+                                    // no need to move firstFreeCol pointer since nothing was moved in this iteration
+                                    fromCell.Block = null;
+                                    BlocksMerged?.Invoke(fromCell.GridPosition, mergeCandidateCell.GridPosition,
+                                        mergeCandidateCell.Block.Value);
+                                }
+                                else if (firstFreeCol > -1) {
+                                    // here we handle ordinary move
+                                    var toCell = row[firstFreeCol];
+                                    fromCell.moveBlockTo(toCell);
+                                    firstFreeCol++; // block was just moved from current column, so index of first free colum is one higher
+                                    BlockMoved?.Invoke(fromCell.GridPosition, toCell.GridPosition);
+                                }
                             }
                         }
+                        
+                   
                     }
                 }
 
@@ -120,11 +153,19 @@ public class LogicGrid {
     }
 
     class Block {
-        public int Value { get; }
+        public int Value { get; private set; }
 
         // todo: make static constructor for set types of blocks instead
         internal Block(int value) {
-            this.Value = value;
+            Value = value;
+        }
+
+        // true if merge happened
+        // false if not
+        internal bool mergeWith(Block other) {
+            if (other.Value != Value) return false;
+            Value += other.Value;
+            return true;
         }
     }
 }
