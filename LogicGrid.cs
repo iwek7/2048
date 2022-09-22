@@ -40,8 +40,6 @@ public class LogicGrid {
     }
 
     public void UpdateWithMove(MoveDirection moveDirection) {
-        SpawnNewCell();
-
         switch (moveDirection) {
             case MoveDirection.Right:
                 break;
@@ -50,10 +48,11 @@ public class LogicGrid {
                     // we don't move first column anyways
                     var firstFreeCol = -1;
                     for (var colIdx = 0; colIdx < _grid.Count; colIdx++) {
-                        if (row[colIdx].IsEmpty()) {
+                        if (row[colIdx].IsEmpty() && firstFreeCol == -1) {
                             firstFreeCol = colIdx;
                         }
-                        else {
+
+                        if (!row[colIdx].IsEmpty()) {
                             if (firstFreeCol > -1) {
                                 var fromCell = row[colIdx];
                                 var toCell = row[firstFreeCol];
@@ -71,6 +70,8 @@ public class LogicGrid {
             case MoveDirection.Down:
                 break;
         }
+
+        SpawnNewCell();
     }
 
     private void SpawnNewCell() {
