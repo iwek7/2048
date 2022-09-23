@@ -96,10 +96,9 @@ public class LogicGrid {
             case MoveDirection.Left:
                 List<List<Cell>> newGrid = new();
                 for (var rowIdx = 0; rowIdx < _grid.Count; rowIdx++) {
-                    var row = _grid[rowIdx];
                     List<Cell> newRow = new();
                     for (var colIdx = 0; colIdx < _grid.Count; colIdx++) {
-                        var cellToCheck = row[colIdx];
+                        var cellToCheck = _grid[rowIdx][colIdx];
                         if (cellToCheck.IsEmpty()) {
                             continue;
                         }
@@ -114,7 +113,7 @@ public class LogicGrid {
                         else {
                             var newCell = new Cell(new GridPosition {
                                 Row = rowIdx,
-                                Column = colIdx
+                                Column = newRow.Count
                             });
                             cellToCheck.moveBlockTo(newCell);
                             newRow.Add(newCell);
@@ -122,13 +121,13 @@ public class LogicGrid {
                         }
                     }
 
-                    while (row.Count < 4) {
-                        row.Add(new Cell(new GridPosition {
+                    while (newRow.Count < _grid[rowIdx].Count) {
+                        newRow.Add(new Cell(new GridPosition {
                             Row = rowIdx,
-                            Column = row.Count
+                            Column = newRow.Count
                         }));
                     }
-                    newGrid.Add(row);
+                    newGrid.Add(newRow);
                 }
 
                 _grid = newGrid;
