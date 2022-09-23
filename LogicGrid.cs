@@ -123,8 +123,12 @@ public class LogicGrid {
                     }
 
                     while (row.Count < 4) {
-                        
+                        row.Add(new Cell(new GridPosition {
+                            Row = rowIdx,
+                            Column = row.Count
+                        }));
                     }
+                    newGrid.Add(row);
                 }
 
                 _grid = newGrid;
