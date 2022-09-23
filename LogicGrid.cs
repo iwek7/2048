@@ -58,8 +58,7 @@ public class LogicGrid {
                             if (firstFreeCol == -1) {
                                 firstFreeCol = colIdx;
                             }
-                        }
-                        else {
+                        } else {
                             var fromCell = row[colIdx];
                             // handle merge
                             // check if cell before one that is free to move to has matching number
@@ -79,8 +78,7 @@ public class LogicGrid {
                                     fromCell.Block = null;
                                     BlocksMerged?.Invoke(fromCell.GridPosition, mergeCandidateCell.GridPosition,
                                         mergeCandidateCell.Block.Value);
-                                }
-                                else if (firstFreeCol > -1) {
+                                } else if (firstFreeCol > -1) {
                                     // here we handle ordinary move
                                     var toCell = row[firstFreeCol];
                                     fromCell.moveBlockTo(toCell);
@@ -97,27 +95,21 @@ public class LogicGrid {
                 List<List<Cell>> newGrid = new();
                 for (var rowIdx = 0; rowIdx < _grid.Count; rowIdx++) {
                     List<Cell> newRow = new();
-                    for (var colIdx = 0; colIdx < _grid.Count; colIdx++) {
-                        var cellToCheck = _grid[rowIdx][colIdx];
-                        if (cellToCheck.IsEmpty()) {
-                            continue;
-                        }
-
+                    foreach (var cell in _grid[rowIdx].Where(cell => !cell.IsEmpty())) {
                         // try to merge
-                        if (newRow.Count > 0 && newRow.Last().Block.mergeWith(cellToCheck.Block)) {
+                        if (newRow.Count > 0 && newRow.Last().Block.mergeWith(cell.Block)) {
                             BlocksMerged?.Invoke(
-                                cellToCheck.GridPosition,
+                                cell.GridPosition,
                                 newRow.Last().GridPosition,
                                 newRow.Last().Block.Value);
-                        }
-                        else {
+                        } else {
                             var newCell = new Cell(new GridPosition {
                                 Row = rowIdx,
                                 Column = newRow.Count
                             });
-                            cellToCheck.moveBlockTo(newCell);
+                            cell.moveBlockTo(newCell);
                             newRow.Add(newCell);
-                            BlockMoved?.Invoke(cellToCheck.GridPosition, newCell.GridPosition);
+                            BlockMoved?.Invoke(cell.GridPosition, newCell.GridPosition);
                         }
                     }
 
@@ -127,6 +119,7 @@ public class LogicGrid {
                             Column = newRow.Count
                         }));
                     }
+
                     newGrid.Add(newRow);
                 }
 
