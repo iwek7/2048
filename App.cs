@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Godot;
 using Logic;
 
@@ -18,15 +20,9 @@ public partial class App : Control {
         _startGameButton.Pressed += HandleStartButtonClicked;
 
         _logicGrid = new LogicGrid(GridDimension);
-        _logicGrid.BlockSpawned += HandleBlockSpawned;
-        _logicGrid.BlockMoved += HandleBlockMoved;
-        _logicGrid.BlocksMerged += HandleBlocksMerged;
 
         _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
     }
-
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
-    public override void _Process(double delta) { }
 
     public override void _UnhandledInput(InputEvent inputEvent) {
         base._UnhandledInput(inputEvent);
@@ -35,66 +31,78 @@ public partial class App : Control {
         switch (keyboardEvent.Keycode) {
             case Key.Left:
                 GD.Print("Move left");
-                _logicGrid.UpdateWithMove(MoveDirection.Left);
+                HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Left));
                 break;
             case Key.Up:
                 GD.Print("Move up");
-                _logicGrid.UpdateWithMove(MoveDirection.Up);
+                HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Up));
                 break;
             case Key.Right:
                 GD.Print("Move right");
-                _logicGrid.UpdateWithMove(MoveDirection.Right);
+                HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Right));
                 break;
             case Key.Down:
                 GD.Print("Move down");
-                _logicGrid.UpdateWithMove(MoveDirection.Down);
+                HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Down));
                 break;
         }
     }
 
-
-    private void HandleStartButtonClicked() {
-        GD.Print("Starting game!");
+    private void HandleGridChanges(List<IGridChange> gridChanges) {
+        foreach (var gridChange in gridChanges) {
+            switch (gridChange) {
+                case BlockMovedChange moveChange:
+                    HandleBlockMoved(moveChange);
+                    break;
+                case BlocksMergedChange mergeChange:
+                    HandleBlocksMerged(mergeChange);
+                    break;
+                case BlockSpawnedChange spawnChange:
+                    HandleBlockSpawned(spawnChange);
+                    break;
+            }
+        }
     }
 
-    private void HandleBlockSpawned(GridPosition gridPosition, int value) {
-        GD.Print($"Block in row {gridPosition.Row}, column {gridPosition.Column} was spawned with value {value}");
+    private void HandleBlockSpawned(BlockSpawnedChange blockSpawnedChange) {
+        GD.Print(
+            $"Block in row {blockSpawnedChange.NewBlockPosition.Row}, column {blockSpawnedChange.NewBlockPosition.Column} was spawned with value {blockSpawnedChange.NewBlockValue}");
 
         var blockNode = createBlockNode();
-        var gridCellNode = getGridNode(gridPosition);
+        var gridCellNode = getGridNode(blockSpawnedChange.NewBlockPosition);
         // Here order is important, we need to first add block to the tree so that _ready is called
         // and children nodes are assigned to block node variables.
         gridCellNode.AddChild(blockNode);
         blockNode.Resize(((ColorRect)gridCellNode.FindChild("ColorRect")).Size);
-        blockNode.Value = value;
+        blockNode.Value = blockSpawnedChange.NewBlockValue;
     }
 
-    private void HandleBlockMoved(GridPosition initialPosition, GridPosition targetPosition) {
-        GD.Print($"Moving block from {initialPosition} to {targetPosition}");
+    private void HandleBlockMoved(BlockMovedChange blockMovedChange) {
+        GD.Print($"Moving block from {blockMovedChange.InitialPosition} to {blockMovedChange.TargetPosition}");
         // remove node from one place
-        var initialGridNode = getGridNode(initialPosition);
+        var initialGridNode = getGridNode(blockMovedChange.InitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
 
         // and move it to the other
-        var targetGridNode = getGridNode(targetPosition);
+        var targetGridNode = getGridNode(blockMovedChange.TargetPosition);
         targetGridNode.AddChild(blockToMove);
     }
 
-    private void HandleBlocksMerged(
-        GridPosition mergedBlockInitialPosition,
-        GridPosition mergeReceiverPosition,
-        int newBlockValue
-    ) {
+    private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
         // remove one node
-        var initialGridNode = getGridNode(mergedBlockInitialPosition);
+        var initialGridNode = getGridNode(blocksMergedChange.MergedBlockInitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
         blockToMove.QueueFree();
 
         // and update the other
-        var blockToMergeTo = getGridNode(mergeReceiverPosition).GetNode<BlockNode>(BlockNodeName);
-        blockToMergeTo.Value = newBlockValue;
+        var blockToMergeTo = getGridNode(blocksMergedChange.MergeReceiverPosition).GetNode<BlockNode>(BlockNodeName);
+        blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
+    }
+    
+    private void HandleStartButtonClicked() {
+        GD.Print("Starting game!");
     }
 
     private Control getGridNode(GridPosition gridPosition) {

@@ -6,16 +6,6 @@ namespace Logic;
 
 using Grid = List<List<LogicGrid.Cell>>;
 
-public delegate void BlockSpawnedHandler(GridPosition gridPosition, int blockValue);
-
-public delegate void BlockMovedHandler(GridPosition initialPosition, GridPosition targetPosition);
-
-public delegate void BlockMergeHandler(
-    GridPosition mergedBlockInitialPosition,
-    GridPosition mergeReceiverPosition,
-    int newBlockValue
-);
-
 public record GridPosition {
     // todo use uint here
     public int Row { get; init; }
@@ -26,9 +16,6 @@ public class LogicGrid {
     private Grid _grid = new();
     private Random _rng = new(); // todo: inject
 
-    public event BlockSpawnedHandler BlockSpawned;
-    public event BlockMovedHandler BlockMoved;
-    public event BlockMergeHandler BlocksMerged;
 
     public LogicGrid(int gridDimension) {
         for (var i = 0; i < gridDimension; i++) {
@@ -36,36 +23,59 @@ public class LogicGrid {
             for (var j = 0; j < gridDimension; j++) {
                 row.Add(new Cell(new GridPosition { Row = i, Column = j }));
             }
+
             _grid.Add(row);
         }
     }
 
-    public void UpdateWithMove(MoveDirection moveDirection) {
+    public List<IGridChange> UpdateWithMove(MoveDirection moveDirection) {
+        MoveResult moveResult;
         switch (moveDirection) {
             case MoveDirection.Right:
-                ApplyMove(
-                    new CompositeGridTransformer(new List<IGridTransformer> { new RightSideGridTransformer(), new RightSideGridTransformer() }),
-                    new CompositeGridTransformer(new List<IGridTransformer> { new LeftSideGridTransformer(), new LeftSideGridTransformer() })
+                moveResult = ApplyMove(
+                    _grid,
+                    new CompositeGridTransformer(new List<IGridTransformer>
+                        { new RightSideGridTransformer(), new RightSideGridTransformer() }),
+                    new CompositeGridTransformer(new List<IGridTransformer>
+                        { new LeftSideGridTransformer(), new LeftSideGridTransformer() })
                 );
                 break;
             case MoveDirection.Left:
-                ApplyMove(new IdentityGridTransformer(), new IdentityGridTransformer());
+                moveResult = ApplyMove(_grid, new IdentityGridTransformer(), new IdentityGridTransformer());
                 break;
             case MoveDirection.Up:
-                ApplyMove(new LeftSideGridTransformer(), new RightSideGridTransformer());
+                moveResult = ApplyMove(_grid, new LeftSideGridTransformer(), new RightSideGridTransformer());
                 break;
             case MoveDirection.Down:
-                ApplyMove(new RightSideGridTransformer (), new LeftSideGridTransformer());
+                moveResult = ApplyMove(_grid, new RightSideGridTransformer(), new LeftSideGridTransformer());
                 break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null);
         }
 
-        SpawnNewCell();
+        _grid = moveResult.GridAfterMove;
+        // new cell is spawned only if move actually moves something
+        // it also ensures that there is free space in grid
+        if (moveResult.GridChanges.Count > 0) {
+            var cellWithSpawn = SpawnNewBlock();
+            moveResult.GridChanges.Add(new BlockSpawnedChange {
+                NewBlockPosition = cellWithSpawn.GridPosition,
+                NewBlockValue = cellWithSpawn.Block.Value
+            });
+        }
+
+        return moveResult.GridChanges;
     }
 
     // this transforms grid using provided transformer and applies movement to left, later it applies reverse transform to grid
     // todo: both this objects should be part of one aggregating object
-    private void ApplyMove(IGridTransformer gridTransformer, IGridTransformer reverseTransformer) {
-        var transformedGrid = gridTransformer.TransposeGrid(_grid);
+    private static MoveResult ApplyMove(
+        Grid grid,
+        IGridTransformer gridTransformer,
+        IGridTransformer reverseTransformer
+    ) {
+        List<IGridChange> changes = new();
+        var transformedGrid = gridTransformer.TransposeGrid(grid);
         Grid newGrid = new();
         for (var rowIdx = 0; rowIdx < transformedGrid.Count; rowIdx++) {
             List<Cell> newRow = new();
@@ -73,10 +83,14 @@ public class LogicGrid {
                 // try to merge
                 if (newRow.Count > 0 && newRow.Last().Block.mergeWith(cell.Block)) {
                     // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
-                    BlocksMerged?.Invoke(
-                        reverseTransformer.TransposeGridPosition(cell.GridPosition),
-                        reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition),
-                        newRow.Last().Block.Value);
+                    changes.Add(
+                        new BlocksMergedChange {
+                            MergedBlockInitialPosition = reverseTransformer.TransposeGridPosition(cell.GridPosition),
+                            MergeReceiverPosition =
+                                reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition),
+                            NewBlockValue = newRow.Last().Block.Value
+                        }
+                    );
                 } else {
                     var newCell = new Cell(new GridPosition {
                         Row = rowIdx,
@@ -85,9 +99,10 @@ public class LogicGrid {
                     cell.moveBlockTo(newCell);
                     newRow.Add(newCell);
                     // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
-                    BlockMoved?.Invoke(
-                        reverseTransformer.TransposeGridPosition(cell.GridPosition),
-                        reverseTransformer.TransposeGridPosition(newCell.GridPosition)
+                    changes.Add(new BlockMovedChange {
+                            InitialPosition = reverseTransformer.TransposeGridPosition(cell.GridPosition),
+                            TargetPosition = reverseTransformer.TransposeGridPosition(newCell.GridPosition)
+                        }
                     );
                 }
             }
@@ -102,21 +117,34 @@ public class LogicGrid {
             newGrid.Add(newRow);
         }
 
-        _grid = reverseTransformer.TransposeGrid(newGrid);
+        return new MoveResult {
+            GridChanges = changes,
+            GridAfterMove = reverseTransformer.TransposeGrid(newGrid)
+        };
     }
 
-    private void SpawnNewCell() {
+    // it returns cell in which block was spawned
+    private Cell SpawnNewBlock() {
         var cells = GetEmptyCells();
-        if (cells.Count > 0) {
-            var newBlock = new Block(2);
+        if (cells.Count == 0) {
+            // todo read some guide which exception to throw
+            throw new ArgumentException("Trying spawn new block but there are no empty cells");
+        }
+
+        var newBlock = new Block(2);
             var cell = cells[_rng.Next(cells.Count)];
             cell.assignBlock(newBlock);
-            BlockSpawned?.Invoke(cell.GridPosition, newBlock.Value);
-        }
+            return cell;
+  
     }
 
     private List<Cell> GetEmptyCells() {
         return (from row in _grid from cell in row where cell.IsEmpty() select cell).ToList();
+    }
+
+    internal record MoveResult {
+        internal Grid GridAfterMove { get; init; }
+        internal List<IGridChange> GridChanges { get; init; }
     }
 
     internal class Cell {
