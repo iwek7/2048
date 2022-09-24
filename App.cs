@@ -1,5 +1,5 @@
 using Godot;
-using V2;
+using Logic;
 
 public partial class App : Control {
     private const int GridDimension = 4;

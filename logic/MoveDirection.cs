@@ -1,4 +1,4 @@
-namespace V2;
+namespace Logic;
 
 public enum MoveDirection {
     Right,
