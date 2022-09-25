@@ -13,6 +13,8 @@ public partial class App : Control {
 
     private PackedScene _blockScene;
 
+    private List<BlockNode> _tweenedNodes = new();
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
         _startGameButton = (Button)FindChild("StartGameButton");
@@ -22,7 +24,7 @@ public partial class App : Control {
 
         _logicGrid = new LogicGrid(GridDimension);
         HandleBlockSpawned(_logicGrid.Initialize());
-
+        HandleBlockSpawned(_logicGrid.Initialize());
     }
 
     public override void _UnhandledInput(InputEvent inputEvent) {
@@ -84,10 +86,25 @@ public partial class App : Control {
         var initialGridNode = getGridNode(blockMovedChange.InitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
-
-        // and move it to the other
+        
         var targetGridNode = getGridNode(blockMovedChange.TargetPosition);
-        targetGridNode.AddChild(blockToMove);
+        
+        // to show movement one big hack is used
+        // it could be so much nicer without this grid construct (maybe) and using regular nodes drawn on canvas
+        // here we remove block from on grid, add it to app root to tween it to new position so that nice movement is shown
+        blockToMove.Position = initialGridNode.GlobalPosition;
+        AddChild(blockToMove);
+        var tween = CreateTween();
+        tween.TweenProperty(blockToMove, "position", targetGridNode.GlobalPosition, 0.1f);
+        
+        tween.Finished += () => {
+            RemoveChild(blockToMove);
+            blockToMove.Position = Vector2.Zero;
+            // when adding blocks to temporary common parent (for tweening) they will get renamed
+            // so update their name once more here when they got assigned to grids
+            blockToMove.Name = BlockNodeName;
+            targetGridNode.AddChild(blockToMove);
+        };
     }
 
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
@@ -101,7 +118,7 @@ public partial class App : Control {
         var blockToMergeTo = getGridNode(blocksMergedChange.MergeReceiverPosition).GetNode<BlockNode>(BlockNodeName);
         blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
     }
-    
+
     private void HandleStartButtonClicked() {
         GD.Print("Starting game!");
     }
