@@ -6,7 +6,8 @@ public partial class BlockNode : ColorRect {
     private static Dictionary<int, Color> _colorMap = new() {
         [2] = Colors.Red,
         [4] = Colors.Blue,
-        [8] = Colors.Green
+        [8] = Colors.Green,
+        [16] = Colors.Beige
     };
 
     private Label _label;

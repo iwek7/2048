@@ -28,6 +28,15 @@ public class LogicGrid {
         }
     }
 
+    // todo: somehow prevent calling initialize twice
+    public BlockSpawnedChange Initialize() {
+        var cellWithSpawn = SpawnNewBlock();
+        return new BlockSpawnedChange {
+            NewBlockPosition = cellWithSpawn.GridPosition,
+            NewBlockValue = cellWithSpawn.Block.Value
+        };
+    }
+
     public List<IGridChange> UpdateWithMove(MoveDirection moveDirection) {
         MoveResult moveResult;
         switch (moveDirection) {
@@ -132,10 +141,9 @@ public class LogicGrid {
         }
 
         var newBlock = new Block(2);
-            var cell = cells[_rng.Next(cells.Count)];
-            cell.assignBlock(newBlock);
-            return cell;
-  
+        var cell = cells[_rng.Next(cells.Count)];
+        cell.assignBlock(newBlock);
+        return cell;
     }
 
     private List<Cell> GetEmptyCells() {

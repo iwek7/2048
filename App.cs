@@ -18,10 +18,11 @@ public partial class App : Control {
         _startGameButton = (Button)FindChild("StartGameButton");
         _mainGrid = (GridContainer)FindChild("MainGrid");
         _startGameButton.Pressed += HandleStartButtonClicked;
+        _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
 
         _logicGrid = new LogicGrid(GridDimension);
+        HandleBlockSpawned(_logicGrid.Initialize());
 
-        _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
     }
 
     public override void _UnhandledInput(InputEvent inputEvent) {
