@@ -66,11 +66,11 @@ public class LogicGrid {
         // new cell is spawned only if move actually moves something
         // it also ensures that there is free space in grid
         if (moveResult.GridChanges.Count > 0) {
-            // var cellWithSpawn = SpawnNewBlock();
-            // moveResult.GridChanges.Add(new BlockSpawnedChange {
-            //     NewBlockPosition = cellWithSpawn.GridPosition,
-            //     NewBlockValue = cellWithSpawn.Block.Value
-            // });
+            var cellWithSpawn = SpawnNewBlock();
+            moveResult.GridChanges.Add(new BlockSpawnedChange {
+                NewBlockPosition = cellWithSpawn.GridPosition,
+                NewBlockValue = cellWithSpawn.Block.Value
+            });
         }
 
         return moveResult.GridChanges;

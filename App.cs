@@ -24,7 +24,6 @@ public partial class App : Control {
 
         _logicGrid = new LogicGrid(GridDimension);
         HandleBlockSpawned(_logicGrid.Initialize());
-        HandleBlockSpawned(_logicGrid.Initialize());
     }
 
     public override void _UnhandledInput(InputEvent inputEvent) {
@@ -67,6 +66,7 @@ public partial class App : Control {
         }
     }
 
+    // todo: spawn should happen after tween movement
     private void HandleBlockSpawned(BlockSpawnedChange blockSpawnedChange) {
         GD.Print(
             $"Block in row {blockSpawnedChange.NewBlockPosition.Row}, column {blockSpawnedChange.NewBlockPosition.Column} was spawned with value {blockSpawnedChange.NewBlockValue}");
@@ -88,25 +88,30 @@ public partial class App : Control {
         initialGridNode.RemoveChild(blockToMove);
         
         var targetGridNode = getGridNode(blockMovedChange.TargetPosition);
+        targetGridNode.AddChild(blockToMove);
         
-        // to show movement one big hack is used
-        // it could be so much nicer without this grid construct (maybe) and using regular nodes drawn on canvas
-        // here we remove block from on grid, add it to app root to tween it to new position so that nice movement is shown
-        blockToMove.Position = initialGridNode.GlobalPosition;
-        AddChild(blockToMove);
+        // it will be shown at the end of the tween
+        blockToMove.Visible = false;
+        
+        // tween block to show movement of blocks
+        var blockToTween = createBlockNode();
+        // todo: take into account margin
+        blockToTween.Position = initialGridNode.GlobalPosition;
+        AddChild(blockToTween);
+        blockToTween.Value = blockToMove.Value;
+        // todo: civilize this
+        blockToTween.Resize(((ColorRect)targetGridNode.FindChild("ColorRect")).Size);
+        
         var tween = CreateTween();
-        tween.TweenProperty(blockToMove, "position", targetGridNode.GlobalPosition, 0.1f);
+        tween.TweenProperty(blockToTween, "position", targetGridNode.GlobalPosition, 0.1f);
         
         tween.Finished += () => {
-            RemoveChild(blockToMove);
-            blockToMove.Position = Vector2.Zero;
-            // when adding blocks to temporary common parent (for tweening) they will get renamed
-            // so update their name once more here when they got assigned to grids
-            blockToMove.Name = BlockNodeName;
-            targetGridNode.AddChild(blockToMove);
+            RemoveChild(blockToTween);
+            blockToMove.Visible = true;
         };
     }
 
+    // todo: movement here should use tween
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
         // remove one node
         var initialGridNode = getGridNode(blocksMergedChange.MergedBlockInitialPosition);
