@@ -107,12 +107,14 @@ public class LogicGrid {
                     });
                     cell.moveBlockTo(newCell);
                     newRow.Add(newCell);
-                    // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
-                    changes.Add(new BlockMovedChange {
-                            InitialPosition = reverseTransformer.TransposeGridPosition(cell.GridPosition),
-                            TargetPosition = reverseTransformer.TransposeGridPosition(newCell.GridPosition)
-                        }
-                    );
+                    if (cell.GridPosition != newCell.GridPosition) {
+                        // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
+                        changes.Add(new BlockMovedChange {
+                                InitialPosition = reverseTransformer.TransposeGridPosition(cell.GridPosition),
+                                TargetPosition = reverseTransformer.TransposeGridPosition(newCell.GridPosition)
+                            }
+                        );
+                    }
                 }
             }
 
