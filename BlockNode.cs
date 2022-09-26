@@ -1,9 +1,9 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using Godot.NativeInterop;
 
 public partial class BlockNode : ColorRect {
+    // todo: make this palette nicer 
     private static Dictionary<int, Color> _colorMap = new() {
         [2] = new Color("#70f6de"),
         [4] = new Color("#00bae0"),

@@ -12,8 +12,7 @@ public partial class App : Control {
     private LogicGrid _logicGrid;
 
     private PackedScene _blockScene;
-
-    private List<BlockNode> _tweenedNodes = new();
+    private ScoreKeeper _scoreKeeper;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
@@ -21,8 +20,10 @@ public partial class App : Control {
         _mainGrid = (GridContainer)FindChild("MainGrid");
         _startGameButton.Pressed += HandleStartButtonClicked;
         _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
-
+        _scoreKeeper = (ScoreKeeper)FindChild("ScoreLabelContainer");
+        
         _logicGrid = new LogicGrid(GridDimension);
+        
         HandleBlockSpawned(_logicGrid.Initialize());
     }
 
@@ -99,11 +100,14 @@ public partial class App : Control {
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
         blockToMove.QueueFree();
-
+        
+        _scoreKeeper.UpdateScore(blocksMergedChange.NewBlockValue);
+        
         // and update the other
         var targetGridNode = GetGridNode(blocksMergedChange.MergeReceiverPosition);
         var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
         blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
+      
         
         TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
     }

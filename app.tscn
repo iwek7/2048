@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://duolywllg8j6i"]
+[gd_scene load_steps=3 format=3 uid="uid://duolywllg8j6i"]
 
 [ext_resource type="Script" path="res://App.cs" id="1_svddc"]
+[ext_resource type="Script" path="res://ScoreKeeper.cs" id="2_rcnre"]
 
 [node name="App" type="Control"]
 layout_mode = 3
@@ -397,6 +398,7 @@ offset_top = -304.0
 offset_right = 552.0
 offset_bottom = -264.0
 columns = 2
+script = ExtResource("2_rcnre")
 
 [node name="ScoreLabel" type="RichTextLabel" parent="ScoreLabelContainer"]
 layout_mode = 2
