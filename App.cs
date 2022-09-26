@@ -71,88 +71,81 @@ public partial class App : Control {
         GD.Print(
             $"Block in row {blockSpawnedChange.NewBlockPosition.Row}, column {blockSpawnedChange.NewBlockPosition.Column} was spawned with value {blockSpawnedChange.NewBlockValue}");
 
-        var blockNode = createBlockNode();
-        var gridCellNode = getGridNode(blockSpawnedChange.NewBlockPosition);
+        var blockNode = CreateBlockNode();
+        var gridCellNode = GetGridNode(blockSpawnedChange.NewBlockPosition);
         // Here order is important, we need to first add block to the tree so that _ready is called
         // and children nodes are assigned to block node variables.
         gridCellNode.AddChild(blockNode);
-        blockNode.Resize(((ColorRect)gridCellNode.FindChild("ColorRect")).Size);
+        blockNode.Resize(GetInnerGridField(gridCellNode).Size);
         blockNode.Value = blockSpawnedChange.NewBlockValue;
     }
 
     private void HandleBlockMoved(BlockMovedChange blockMovedChange) {
         GD.Print($"Moving block from {blockMovedChange.InitialPosition} to {blockMovedChange.TargetPosition}");
         // remove node from one place
-        var initialGridNode = getGridNode(blockMovedChange.InitialPosition);
+        var initialGridNode = GetGridNode(blockMovedChange.InitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
         
-        var targetGridNode = getGridNode(blockMovedChange.TargetPosition);
+        var targetGridNode = GetGridNode(blockMovedChange.TargetPosition);
         targetGridNode.AddChild(blockToMove);
         
-        // it will be shown at the end of the tween
-        blockToMove.Visible = false;
-        
-        // tween block to show movement of blocks
-        var blockToTween = createBlockNode();
-        // todo: take into account margin
-        blockToTween.Position = ((ColorRect)initialGridNode.FindChild("ColorRect")).GlobalPosition;
-        AddChild(blockToTween);
-        blockToTween.Value = blockToMove.Value;
-        // todo: civilize this
-        blockToTween.Resize(((ColorRect)targetGridNode.FindChild("ColorRect")).Size);
-        
-        var tween = CreateTween();
-        tween.TweenProperty(blockToTween, "position", ((ColorRect)targetGridNode.FindChild("ColorRect")).GlobalPosition, 0.1f);
-        
-        tween.Finished += () => {
-            RemoveChild(blockToTween);
-            blockToMove.Visible = true;
-        };
+        tweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMove);
     }
 
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
         // remove one node
-        var initialGridNode = getGridNode(blocksMergedChange.MergedBlockInitialPosition);
+        var initialGridNode = GetGridNode(blocksMergedChange.MergedBlockInitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
         blockToMove.QueueFree();
 
         // and update the other
-        var targetGridNode = getGridNode(blocksMergedChange.MergeReceiverPosition);
+        var targetGridNode = GetGridNode(blocksMergedChange.MergeReceiverPosition);
         var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
         blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
-
-        blockToMergeTo.Visible = false;
         
-        var blockToTween = createBlockNode();
-        // todo: take into account margin
-        blockToTween.Position = ((ColorRect)initialGridNode.FindChild("ColorRect")).GlobalPosition;
+        tweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
+    }
+
+    private void tweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
+        targetNode.Visible = false;
+        
+        var blockToTween = CreateBlockNode();
+        
+        blockToTween.Position = GetInnerGridField(initialGridCell).GlobalPosition;
         AddChild(blockToTween);
-        blockToTween.Value = blockToMove.Value;
-        // todo: civilize this
-        blockToTween.Resize(((ColorRect)targetGridNode.FindChild("ColorRect")).Size);
+        blockToTween.Value = tweenBlockValue;
+       
+        blockToTween.Resize(GetInnerGridField(initialGridCell).Size);
         
         var tween = CreateTween();
-        tween.TweenProperty(blockToTween, "position", ((ColorRect)targetGridNode.FindChild("ColorRect")).GlobalPosition, 0.1f);
+        tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, 0.1f);
 
         tween.Finished += () => {
             RemoveChild(blockToTween);
-            blockToMergeTo.Visible = true;
+            targetNode.Visible = true;
         };
     }
 
     private void HandleStartButtonClicked() {
         GD.Print("Starting game!");
     }
-
-    private Control getGridNode(GridPosition gridPosition) {
+    
+    private Control GetGridNode(GridPosition gridPosition) {
         return (Control)_mainGrid.GetChild(gridPosition.Row * GridDimension + gridPosition.Column);
     }
 
-    private BlockNode createBlockNode() {
+    private BlockNode CreateBlockNode() {
         var blockNode = (BlockNode)_blockScene.Instantiate();
         blockNode.Name = BlockNodeName;
         return blockNode;
     }
+    
+    // grid node is just an wrapper around color rect
+    // this could be made more objective (make grid cell a scene) but why bother now
+    private static Control GetInnerGridField(Node gridNode) {
+        return (ColorRect)gridNode.FindChild("ColorRect");
+    }
+
 }
