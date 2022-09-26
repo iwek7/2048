@@ -96,14 +96,14 @@ public partial class App : Control {
         // tween block to show movement of blocks
         var blockToTween = createBlockNode();
         // todo: take into account margin
-        blockToTween.Position = initialGridNode.GlobalPosition;
+        blockToTween.Position = ((ColorRect)initialGridNode.FindChild("ColorRect")).GlobalPosition;
         AddChild(blockToTween);
         blockToTween.Value = blockToMove.Value;
         // todo: civilize this
         blockToTween.Resize(((ColorRect)targetGridNode.FindChild("ColorRect")).Size);
         
         var tween = CreateTween();
-        tween.TweenProperty(blockToTween, "position", targetGridNode.GlobalPosition, 0.1f);
+        tween.TweenProperty(blockToTween, "position", ((ColorRect)targetGridNode.FindChild("ColorRect")).GlobalPosition, 0.1f);
         
         tween.Finished += () => {
             RemoveChild(blockToTween);
@@ -127,14 +127,14 @@ public partial class App : Control {
         
         var blockToTween = createBlockNode();
         // todo: take into account margin
-        blockToTween.Position = initialGridNode.GlobalPosition;
+        blockToTween.Position = ((ColorRect)initialGridNode.FindChild("ColorRect")).GlobalPosition;
         AddChild(blockToTween);
         blockToTween.Value = blockToMove.Value;
         // todo: civilize this
         blockToTween.Resize(((ColorRect)targetGridNode.FindChild("ColorRect")).Size);
         
         var tween = CreateTween();
-        tween.TweenProperty(blockToTween, "position", targetGridNode.GlobalPosition, 0.1f);
+        tween.TweenProperty(blockToTween, "position", ((ColorRect)targetGridNode.FindChild("ColorRect")).GlobalPosition, 0.1f);
 
         tween.Finished += () => {
             RemoveChild(blockToTween);
