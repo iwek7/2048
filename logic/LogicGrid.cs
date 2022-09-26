@@ -141,8 +141,8 @@ public class LogicGrid {
             // todo read some guide which exception to throw
             throw new ArgumentException("Trying spawn new block but there are no empty cells");
         }
-
-        var newBlock = new Block(2);
+        
+        var newBlock = new Block(_rng.NextDouble() <= 0.9 ? 2 : 4);
         var cell = cells[_rng.Next(cells.Count)];
         cell.assignBlock(newBlock);
         return cell;
