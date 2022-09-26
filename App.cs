@@ -111,7 +111,6 @@ public partial class App : Control {
         };
     }
 
-    // todo: movement here should use tween
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
         // remove one node
         var initialGridNode = getGridNode(blocksMergedChange.MergedBlockInitialPosition);
@@ -120,8 +119,27 @@ public partial class App : Control {
         blockToMove.QueueFree();
 
         // and update the other
-        var blockToMergeTo = getGridNode(blocksMergedChange.MergeReceiverPosition).GetNode<BlockNode>(BlockNodeName);
+        var targetGridNode = getGridNode(blocksMergedChange.MergeReceiverPosition);
+        var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
         blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
+
+        blockToMergeTo.Visible = false;
+        
+        var blockToTween = createBlockNode();
+        // todo: take into account margin
+        blockToTween.Position = initialGridNode.GlobalPosition;
+        AddChild(blockToTween);
+        blockToTween.Value = blockToMove.Value;
+        // todo: civilize this
+        blockToTween.Resize(((ColorRect)targetGridNode.FindChild("ColorRect")).Size);
+        
+        var tween = CreateTween();
+        tween.TweenProperty(blockToTween, "position", targetGridNode.GlobalPosition, 0.1f);
+
+        tween.Finished += () => {
+            RemoveChild(blockToTween);
+            blockToMergeTo.Visible = true;
+        };
     }
 
     private void HandleStartButtonClicked() {
