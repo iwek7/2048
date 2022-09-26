@@ -90,7 +90,7 @@ public partial class App : Control {
         var targetGridNode = GetGridNode(blockMovedChange.TargetPosition);
         targetGridNode.AddChild(blockToMove);
         
-        tweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMove);
+        TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMove);
     }
 
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
@@ -105,10 +105,10 @@ public partial class App : Control {
         var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
         blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
         
-        tweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
+        TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
     }
 
-    private void tweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
+    private void TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
         targetNode.Visible = false;
         
         var blockToTween = CreateBlockNode();
