@@ -1,13 +1,21 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Godot.NativeInterop;
 
 public partial class BlockNode : ColorRect {
     private static Dictionary<int, Color> _colorMap = new() {
-        [2] = Colors.Red,
-        [4] = Colors.Blue,
-        [8] = Colors.Green,
-        [16] = Colors.Beige
+        [2] = new Color("#70f6de"),
+        [4] = new Color("#00bae0"),
+        [8] = new Color("#0079d4"),
+        [16] = new Color("#182b9b"),
+        [32] = new Color("#56279b"),
+        [64] = new Color("#7c2098"),
+        [128] = new Color("#9b1893"),
+        [256] = new Color("#da0c79"),
+        [512] = new Color("#ff4357"),
+        [1024] = new Color("#ff7c32"),
+        [2048] = new Color("#ffb400")
     };
 
     private Label _label;
