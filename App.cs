@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Godot;
 using Logic;
@@ -14,6 +13,8 @@ public partial class App : Control {
     private PackedScene _blockScene;
     private ScoreKeeper _scoreKeeper;
 
+    private Banner _banner;
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
         _startGameButton = (Button)FindChild("RestartGameButton");
@@ -21,9 +22,25 @@ public partial class App : Control {
         _startGameButton.Pressed += HandleRestartButtonClicked;
         _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
         _scoreKeeper = (ScoreKeeper)FindChild("ScoreLabelContainer");
+        
+        _banner = (Banner)FindChild("Banner");
+        _banner.Visible = false;
+        _banner.RestartButtonClicked += HandleRestartButtonClicked;
+        _banner.QuitButtonClicked += () => {
+            GetTree().Quit();
+        };
+        
+        // only for testing
+        // todo: remove
+        ((Button)FindChild("TestLoseButton")).Pressed += () => {
+            _banner.Show(false, _scoreKeeper.Score);
+        };
+        ((Button)FindChild("TestWinButton")).Pressed += () => {
+            _banner.Show(true, _scoreKeeper.Score);
+        };
 
         _logicGrid = new LogicGrid(GridDimension);
-
+        
         HandleBlockSpawned(_logicGrid.Initialize());
     }
 
@@ -134,6 +151,7 @@ public partial class App : Control {
 
     private void HandleRestartButtonClicked() {
         _scoreKeeper.ResetScore();
+        _banner.Visible = false;
         foreach (var gridNode in _mainGrid.GetChildren()) {
             var block = gridNode.GetNode<BlockNode>(BlockNodeName);
             if (block != null) {
@@ -141,7 +159,7 @@ public partial class App : Control {
                 block.QueueFree();
             }
         }
-        
+
         _logicGrid = new LogicGrid(GridDimension);
         HandleBlockSpawned(_logicGrid.Initialize());
 

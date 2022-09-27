@@ -1,0 +1,80 @@
+[gd_scene load_steps=3 format=3 uid="uid://e8fb1knbtub7"]
+
+[ext_resource type="Script" path="res://Banner.cs" id="1_1efyv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fojgh"]
+bg_color = Color(0.6, 0.6, 0.6, 0.886275)
+
+[node name="Banner" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_1efyv")
+
+[node name="Panel" type="Panel" parent="."]
+offset_left = -360.0
+offset_top = -212.0
+offset_right = 344.0
+offset_bottom = 189.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_fojgh")
+
+[node name="CenterContainer" type="CenterContainer" parent="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GridContainer" type="GridContainer" parent="Panel/CenterContainer"]
+offset_left = 237.0
+offset_top = 126.0
+offset_right = 467.0
+offset_bottom = 275.0
+
+[node name="ResultLabel" type="Label" parent="Panel/CenterContainer/GridContainer"]
+offset_right = 230.0
+offset_bottom = 72.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 50
+text = "You Won!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/CenterContainer/GridContainer"]
+offset_top = 76.0
+offset_right = 230.0
+offset_bottom = 114.0
+theme_override_constants/margin_bottom = 7
+
+[node name="ScoreLabel" type="Label" parent="Panel/CenterContainer/GridContainer/MarginContainer"]
+offset_right = 230.0
+offset_bottom = 31.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "Your score was: 123"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GridContainer" type="GridContainer" parent="Panel/CenterContainer/GridContainer"]
+offset_top = 118.0
+offset_right = 230.0
+offset_bottom = 149.0
+columns = 2
+
+[node name="RestartButton" type="Button" parent="Panel/CenterContainer/GridContainer/GridContainer"]
+offset_right = 113.0
+offset_bottom = 31.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Restart"
+
+[node name="QuitGameButton" type="Button" parent="Panel/CenterContainer/GridContainer/GridContainer"]
+offset_left = 117.0
+offset_right = 230.0
+offset_bottom = 31.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Quit"

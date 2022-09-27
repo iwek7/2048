@@ -3,7 +3,7 @@ using Godot;
 public partial class ScoreKeeper : GridContainer {
 
     private RichTextLabel _scoreLabel;
-    private int _score = 0;
+    public int Score { get; private set; }
     
     public override void _Ready() {
         base._Ready();
@@ -11,12 +11,12 @@ public partial class ScoreKeeper : GridContainer {
     }
 
     public void UpdateScore(int scoreToAdd) {
-        _score += scoreToAdd;
-        _scoreLabel.Text = _score.ToString();
+        Score += scoreToAdd;
+        _scoreLabel.Text = Score.ToString();
     }
 
     public void ResetScore() {
-        _score = 0;
-        _scoreLabel.Text = _score.ToString();
+        Score = 0;
+        _scoreLabel.Text = Score.ToString();
     }
 }

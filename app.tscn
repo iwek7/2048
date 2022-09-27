@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://duolywllg8j6i"]
+[gd_scene load_steps=4 format=3 uid="uid://duolywllg8j6i"]
 
 [ext_resource type="Script" path="res://App.cs" id="1_svddc"]
 [ext_resource type="Script" path="res://ScoreKeeper.cs" id="2_rcnre"]
+[ext_resource type="PackedScene" uid="uid://e8fb1knbtub7" path="res://Banner.tscn" id="3_crqh2"]
 
 [node name="App" type="Control"]
 layout_mode = 3
@@ -220,34 +221,11 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 color = Color(0.780392, 0.780392, 0.780392, 1)
 
-[node name="MarginContainer10" type="MarginContainer" parent="MainGrid"]
+[node name="MarginContainer11" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
 offset_left = 163.0
 offset_top = 325.0
 offset_right = 321.0
-offset_bottom = 483.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/margin_left = 5
-theme_override_constants/margin_top = 5
-theme_override_constants/margin_right = 5
-theme_override_constants/margin_bottom = 5
-
-[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer10"]
-layout_mode = 2
-offset_left = 5.0
-offset_top = 5.0
-offset_right = 153.0
-offset_bottom = 153.0
-size_flags_horizontal = 3
-size_flags_vertical = 3
-color = Color(0.780392, 0.780392, 0.780392, 1)
-
-[node name="MarginContainer11" type="MarginContainer" parent="MainGrid"]
-layout_mode = 2
-offset_left = 325.0
-offset_top = 325.0
-offset_right = 483.0
 offset_bottom = 483.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -268,9 +246,9 @@ color = Color(0.780392, 0.780392, 0.780392, 1)
 
 [node name="MarginContainer12" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
-offset_left = 487.0
+offset_left = 325.0
 offset_top = 325.0
-offset_right = 645.0
+offset_right = 483.0
 offset_bottom = 483.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -291,9 +269,10 @@ color = Color(0.780392, 0.780392, 0.780392, 1)
 
 [node name="MarginContainer13" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
-offset_top = 487.0
-offset_right = 159.0
-offset_bottom = 645.0
+offset_left = 487.0
+offset_top = 325.0
+offset_right = 645.0
+offset_bottom = 483.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/margin_left = 5
@@ -305,7 +284,7 @@ theme_override_constants/margin_bottom = 5
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
-offset_right = 154.0
+offset_right = 153.0
 offset_bottom = 153.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -313,9 +292,8 @@ color = Color(0.780392, 0.780392, 0.780392, 1)
 
 [node name="MarginContainer14" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
-offset_left = 163.0
 offset_top = 487.0
-offset_right = 321.0
+offset_right = 159.0
 offset_bottom = 645.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -328,7 +306,7 @@ theme_override_constants/margin_bottom = 5
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
-offset_right = 153.0
+offset_right = 154.0
 offset_bottom = 153.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -336,9 +314,9 @@ color = Color(0.780392, 0.780392, 0.780392, 1)
 
 [node name="MarginContainer15" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
-offset_left = 325.0
+offset_left = 163.0
 offset_top = 487.0
-offset_right = 483.0
+offset_right = 321.0
 offset_bottom = 645.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -359,6 +337,29 @@ color = Color(0.780392, 0.780392, 0.780392, 1)
 
 [node name="MarginContainer16" type="MarginContainer" parent="MainGrid"]
 layout_mode = 2
+offset_left = 325.0
+offset_top = 487.0
+offset_right = 483.0
+offset_bottom = 645.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer16"]
+layout_mode = 2
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 153.0
+offset_bottom = 153.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+color = Color(0.780392, 0.780392, 0.780392, 1)
+
+[node name="MarginContainer17" type="MarginContainer" parent="MainGrid"]
+layout_mode = 2
 offset_left = 487.0
 offset_top = 487.0
 offset_right = 645.0
@@ -370,7 +371,7 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer16"]
+[node name="ColorRect" type="ColorRect" parent="MainGrid/MarginContainer17"]
 layout_mode = 2
 offset_left = 5.0
 offset_top = 5.0
@@ -416,3 +417,23 @@ offset_bottom = 40.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "0"
+
+[node name="Banner" parent="." instance=ExtResource("3_crqh2")]
+visible = false
+layout_mode = 1
+
+[node name="TestLoseButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = -499.0
+offset_top = -185.0
+offset_right = -419.0
+offset_bottom = -154.0
+text = "Test Lose"
+
+[node name="TestWinButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = -496.0
+offset_top = -137.0
+offset_right = -423.0
+offset_bottom = -106.0
+text = "Test win"
