@@ -127,6 +127,9 @@ public partial class App : Control {
 
 
         TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
+        if (blocksMergedChange.NewBlockValue == 2048) {
+            _banner.Show(true, _scoreKeeper.Score);
+        }
     }
 
     private void TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
