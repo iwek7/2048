@@ -16,14 +16,14 @@ public partial class App : Control {
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
-        _startGameButton = (Button)FindChild("StartGameButton");
+        _startGameButton = (Button)FindChild("RestartGameButton");
         _mainGrid = (GridContainer)FindChild("MainGrid");
-        _startGameButton.Pressed += HandleStartButtonClicked;
+        _startGameButton.Pressed += HandleRestartButtonClicked;
         _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
         _scoreKeeper = (ScoreKeeper)FindChild("ScoreLabelContainer");
-        
+
         _logicGrid = new LogicGrid(GridDimension);
-        
+
         HandleBlockSpawned(_logicGrid.Initialize());
     }
 
@@ -87,10 +87,10 @@ public partial class App : Control {
         var initialGridNode = GetGridNode(blockMovedChange.InitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
-        
+
         var targetGridNode = GetGridNode(blockMovedChange.TargetPosition);
         targetGridNode.AddChild(blockToMove);
-        
+
         TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMove);
     }
 
@@ -100,29 +100,29 @@ public partial class App : Control {
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
         initialGridNode.RemoveChild(blockToMove);
         blockToMove.QueueFree();
-        
+
         _scoreKeeper.UpdateScore(blocksMergedChange.NewBlockValue);
-        
+
         // and update the other
         var targetGridNode = GetGridNode(blocksMergedChange.MergeReceiverPosition);
         var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
         blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
-      
-        
+
+
         TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
     }
 
     private void TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
         targetNode.Visible = false;
-        
+
         var blockToTween = CreateBlockNode();
-        
+
         blockToTween.Position = GetInnerGridField(initialGridCell).GlobalPosition;
         AddChild(blockToTween);
         blockToTween.Value = tweenBlockValue;
-       
+
         blockToTween.Resize(GetInnerGridField(initialGridCell).Size);
-        
+
         var tween = CreateTween();
         tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, 0.1f);
 
@@ -132,10 +132,22 @@ public partial class App : Control {
         };
     }
 
-    private void HandleStartButtonClicked() {
-        GD.Print("Starting game!");
+    private void HandleRestartButtonClicked() {
+        _scoreKeeper.ResetScore();
+        foreach (var gridNode in _mainGrid.GetChildren()) {
+            var block = gridNode.GetNode<BlockNode>(BlockNodeName);
+            if (block != null) {
+                gridNode.RemoveChild(block);
+                block.QueueFree();
+            }
+        }
+        
+        _logicGrid = new LogicGrid(GridDimension);
+        HandleBlockSpawned(_logicGrid.Initialize());
+
+        GD.Print("Restarted game!");
     }
-    
+
     private Control GetGridNode(GridPosition gridPosition) {
         return (Control)_mainGrid.GetChild(gridPosition.Row * GridDimension + gridPosition.Column);
     }
@@ -145,11 +157,10 @@ public partial class App : Control {
         blockNode.Name = BlockNodeName;
         return blockNode;
     }
-    
+
     // grid node is just an wrapper around color rect
     // this could be made more objective (make grid cell a scene) but why bother now
     private static Control GetInnerGridField(Node gridNode) {
         return (ColorRect)gridNode.FindChild("ColorRect");
     }
-
 }

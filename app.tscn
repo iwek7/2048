@@ -383,13 +383,13 @@ color = Color(0.780392, 0.780392, 0.780392, 1)
 [node name="Camera2d" type="Camera2D" parent="."]
 current = true
 
-[node name="StartGameButton" type="Button" parent="."]
+[node name="RestartGameButton" type="Button" parent="."]
 layout_mode = 0
 offset_left = -512.0
 offset_top = -277.0
 offset_right = -378.0
 offset_bottom = -208.0
-text = "Start game"
+text = "Restart game"
 
 [node name="ScoreLabelContainer" type="GridContainer" parent="."]
 layout_mode = 0
