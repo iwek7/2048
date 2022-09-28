@@ -38,31 +38,10 @@ public class LogicGrid {
     }
 
     public List<IGridChange> UpdateWithMove(MoveDirection moveDirection) {
-        MoveResult moveResult;
-        switch (moveDirection) {
-            case MoveDirection.Right:
-                moveResult = ApplyMove(
-                    _grid,
-                    new CompositeGridTransformer(new List<IGridTransformer>
-                        { new RightSideGridTransformer(), new RightSideGridTransformer() }),
-                    new CompositeGridTransformer(new List<IGridTransformer>
-                        { new LeftSideGridTransformer(), new LeftSideGridTransformer() })
-                );
-                break;
-            case MoveDirection.Left:
-                moveResult = ApplyMove(_grid, new IdentityGridTransformer(), new IdentityGridTransformer());
-                break;
-            case MoveDirection.Up:
-                moveResult = ApplyMove(_grid, new LeftSideGridTransformer(), new RightSideGridTransformer());
-                break;
-            case MoveDirection.Down:
-                moveResult = ApplyMove(_grid, new RightSideGridTransformer(), new LeftSideGridTransformer());
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null);
-        }
+        var moveResult = ApplyMoveWithTransforms(moveDirection, _grid);
 
         _grid = moveResult.GridAfterMove;
+
         // new cell is spawned only if move actually moves something
         // it also ensures that there is free space in grid
         if (moveResult.GridChanges.Count > 0) {
@@ -73,12 +52,37 @@ public class LogicGrid {
             });
         }
 
+        // check lose condition
+        // if no moves occured then this condition was evaluated during previous move, hance checking current moveResult
+        if (moveResult.GridChanges.Count > 0 && NoMovesLeft()) {
+            moveResult.GridChanges.Add(new NoMovesLeftChange());
+        }
+
         return moveResult.GridChanges;
+    }
+
+
+    private static MoveResult ApplyMoveWithTransforms(MoveDirection moveDirection, Grid grid) {
+        return moveDirection switch {
+            MoveDirection.Right => ApplyMoveToTheLeft(grid,
+                new CompositeGridTransformer(new List<IGridTransformer> {
+                    new RightSideGridTransformer(), new RightSideGridTransformer()
+                }),
+                new CompositeGridTransformer(new List<IGridTransformer> {
+                    new LeftSideGridTransformer(), new LeftSideGridTransformer()
+                })),
+            MoveDirection.Left => ApplyMoveToTheLeft(grid, new IdentityGridTransformer(),
+                new IdentityGridTransformer()),
+            MoveDirection.Up => ApplyMoveToTheLeft(grid, new LeftSideGridTransformer(), new RightSideGridTransformer()),
+            MoveDirection.Down => ApplyMoveToTheLeft(grid, new RightSideGridTransformer(),
+                new LeftSideGridTransformer()),
+            _ => throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null)
+        };
     }
 
     // this transforms grid using provided transformer and applies movement to left, later it applies reverse transform to grid
     // todo: both this objects should be part of one aggregating object
-    private static MoveResult ApplyMove(
+    private static MoveResult ApplyMoveToTheLeft(
         Grid grid,
         IGridTransformer gridTransformer,
         IGridTransformer reverseTransformer
@@ -134,6 +138,15 @@ public class LogicGrid {
         };
     }
 
+    private bool NoMovesLeft() {
+        return GetEmptyCells().Count == 0 && // if there is space to move then move is obviously possible
+               // try moving in every direction and see if any change happens
+               ApplyMoveWithTransforms(MoveDirection.Left, _grid).GridChanges.Count == 0 &&
+               ApplyMoveWithTransforms(MoveDirection.Right, _grid).GridChanges.Count == 0 &&
+               ApplyMoveWithTransforms(MoveDirection.Up, _grid).GridChanges.Count == 0 &&
+               ApplyMoveWithTransforms(MoveDirection.Down, _grid).GridChanges.Count == 0;
+    }
+
     // it returns cell in which block was spawned
     private Cell SpawnNewBlock() {
         var cells = GetEmptyCells();
@@ -141,7 +154,7 @@ public class LogicGrid {
             // todo read some guide which exception to throw
             throw new ArgumentException("Trying spawn new block but there are no empty cells");
         }
-        
+
         var newBlock = new Block(_rng.NextDouble() <= 0.9 ? 2 : 4);
         var cell = cells[_rng.Next(cells.Count)];
         cell.assignBlock(newBlock);

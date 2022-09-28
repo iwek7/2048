@@ -80,6 +80,9 @@ public partial class App : Control {
                 case BlockSpawnedChange spawnChange:
                     HandleBlockSpawned(spawnChange);
                     break;
+                case NoMovesLeftChange noMovesLeftChange:
+                    HandleNoMovesLeft(noMovesLeftChange);
+                    break;
             }
         }
     }
@@ -132,6 +135,10 @@ public partial class App : Control {
         }
     }
 
+    private void HandleNoMovesLeft(NoMovesLeftChange noMovesLeftChange) {
+        _banner.Show(false, _scoreKeeper.Score);
+    }
+    
     private void TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
         targetNode.Visible = false;
 

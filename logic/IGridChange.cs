@@ -17,3 +17,5 @@ public record BlockSpawnedChange : IGridChange {
     public GridPosition NewBlockPosition { get; init; }
     public int NewBlockValue { get; init; }
 }
+
+public record NoMovesLeftChange : IGridChange { }
