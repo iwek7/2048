@@ -121,10 +121,15 @@ public partial class App : Control {
         var targetGridNode = GetGridNode(blockMovedChange.TargetPosition);
         targetGridNode.AddChild(blockToMove);
 
-        TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMove);
+        blockToMove.Visible = false;
+        var tween = TweenMovement(initialGridNode, targetGridNode, blockToMove.Value);
+        tween.Finished += () => {
+            blockToMove.Visible = true;
+        };
     }
 
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
+        // todo: add log
         // remove one node
         var initialGridNode = GetGridNode(blocksMergedChange.MergedBlockInitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
@@ -136,9 +141,11 @@ public partial class App : Control {
         // and update the other
         var targetGridNode = GetGridNode(blocksMergedChange.MergeReceiverPosition);
         var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
-        blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
         
-        TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
+        var tween = TweenMovement(initialGridNode, targetGridNode, blockToMove.Value);
+        tween.Finished += () => {
+            blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
+        };
 
         if (blocksMergedChange.NewBlockValue == 2048) {
             _banner.Show(true, _scoreKeeper.Score);
@@ -149,9 +156,8 @@ public partial class App : Control {
         _banner.Show(false, _scoreKeeper.Score);
     }
 
-    private Tween TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
+    private Tween TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue) {
         running++;
-        targetNode.Visible = false;
 
         var blockToTween = CreateBlockNode();
 
@@ -162,11 +168,11 @@ public partial class App : Control {
         blockToTween.CustomMinimumSize = (GetInnerGridField(initialGridCell).Size).ToVector2I();
 
         var tween = CreateTween();
+        tween.SetEase(Tween.EaseType.In);
         tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, MoveAnimationTime);
 
         tween.Finished += () => {
             RemoveChild(blockToTween);
-            targetNode.Visible = true;
             running--;
         };
         return tween;
