@@ -36,9 +36,4 @@ public partial class BlockNode : ColorRect {
     public override void _Ready() {
         _label = (Label)FindChild("Label");
     }
-
-    // todo: this is useless
-    public void Resize(Vector2 newSize) {
-        Size = newSize;
-    }
 }

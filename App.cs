@@ -22,25 +22,19 @@ public partial class App : Control {
         _startGameButton.Pressed += HandleRestartButtonClicked;
         _blockScene = (PackedScene)ResourceLoader.Load("res://Block.tscn");
         _scoreKeeper = (ScoreKeeper)FindChild("ScoreLabelContainer");
-        
+
         _banner = (Banner)FindChild("Banner");
         _banner.Visible = false;
         _banner.RestartButtonClicked += HandleRestartButtonClicked;
-        _banner.QuitButtonClicked += () => {
-            GetTree().Quit();
-        };
-        
+        _banner.QuitButtonClicked += () => { GetTree().Quit(); };
+
         // only for testing
         // todo: remove
-        ((Button)FindChild("TestLoseButton")).Pressed += () => {
-            _banner.Show(false, _scoreKeeper.Score);
-        };
-        ((Button)FindChild("TestWinButton")).Pressed += () => {
-            _banner.Show(true, _scoreKeeper.Score);
-        };
+        ((Button)FindChild("TestLoseButton")).Pressed += () => { _banner.Show(false, _scoreKeeper.Score); };
+        ((Button)FindChild("TestWinButton")).Pressed += () => { _banner.Show(true, _scoreKeeper.Score); };
 
         _logicGrid = new LogicGrid(GridDimension);
-        
+
         HandleBlockSpawned(_logicGrid.Initialize());
     }
 
@@ -90,15 +84,24 @@ public partial class App : Control {
     // todo: spawn should happen after tween movement
     private void HandleBlockSpawned(BlockSpawnedChange blockSpawnedChange) {
         GD.Print(
-            $"Block in row {blockSpawnedChange.NewBlockPosition.Row}, column {blockSpawnedChange.NewBlockPosition.Column} was spawned with value {blockSpawnedChange.NewBlockValue}");
+            $"Block in row {blockSpawnedChange.NewBlockPosition.Row}, column {blockSpawnedChange.NewBlockPosition.Column}" +
+            $" was spawned with value {blockSpawnedChange.NewBlockValue}"
+        );
 
         var blockNode = CreateBlockNode();
         var gridCellNode = GetGridNode(blockSpawnedChange.NewBlockPosition);
         // Here order is important, we need to first add block to the tree so that _ready is called
         // and children nodes are assigned to block node variables.
         gridCellNode.AddChild(blockNode);
-        blockNode.Resize(GetInnerGridField(gridCellNode).Size);
         blockNode.Value = blockSpawnedChange.NewBlockValue;
+        blockNode.CustomMinimumSize = (GetInnerGridField(gridCellNode).Size / 2).ToVector2I();
+
+        var tween = CreateTween();
+        tween.TweenProperty(blockNode, "custom_minimum_size", GetInnerGridField(gridCellNode).Size.ToVector2I(), 0.3f);
+        tween.Finished += () => {
+            blockNode.SizeFlagsHorizontal = (int)SizeFlags.Fill;
+            blockNode.SizeFlagsVertical = (int)SizeFlags.Fill;
+        };
     }
 
     private void HandleBlockMoved(BlockMovedChange blockMovedChange) {
@@ -138,7 +141,7 @@ public partial class App : Control {
     private void HandleNoMovesLeft(NoMovesLeftChange noMovesLeftChange) {
         _banner.Show(false, _scoreKeeper.Score);
     }
-    
+
     private void TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
         targetNode.Visible = false;
 
@@ -147,11 +150,11 @@ public partial class App : Control {
         blockToTween.Position = GetInnerGridField(initialGridCell).GlobalPosition;
         AddChild(blockToTween);
         blockToTween.Value = tweenBlockValue;
-
-        blockToTween.Resize(GetInnerGridField(initialGridCell).Size);
+        
+        blockToTween.CustomMinimumSize = (GetInnerGridField(initialGridCell).Size).ToVector2I();
 
         var tween = CreateTween();
-        tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, 0.1f);
+        tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, 0.2f);
 
         tween.Finished += () => {
             RemoveChild(blockToTween);
@@ -190,5 +193,12 @@ public partial class App : Control {
     // this could be made more objective (make grid cell a scene) but why bother now
     private static Control GetInnerGridField(Node gridNode) {
         return (ColorRect)gridNode.FindChild("ColorRect");
+    }
+}
+
+// todo move this to some utils file and add rounding modes
+public static class GodotExtensions {
+    public static Vector2i ToVector2I(this Vector2 vec) {
+        return new Vector2i((int) vec.x, (int) vec.y);
     }
 }
