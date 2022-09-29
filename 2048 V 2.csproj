@@ -4,4 +4,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>V2</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="todos.txt" />
+  </ItemGroup>
 </Project>

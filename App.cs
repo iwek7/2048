@@ -15,6 +15,11 @@ public partial class App : Control {
 
     private Banner _banner;
 
+    // allow next move only when all animations of previous move finished
+    private int running = 0;
+    private const float MoveAnimationTime = 0.2f;
+    private const float SpawnAnimationTime = 0.15f;
+    
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
         _startGameButton = (Button)FindChild("RestartGameButton");
@@ -41,7 +46,8 @@ public partial class App : Control {
     public override void _UnhandledInput(InputEvent inputEvent) {
         base._UnhandledInput(inputEvent);
         if (inputEvent is not InputEventKey { Pressed: true } keyboardEvent) return;
-
+        if (running > 0) return;
+        
         switch (keyboardEvent.Keycode) {
             case Key.Left:
                 GD.Print("Move left");
@@ -81,7 +87,6 @@ public partial class App : Control {
         }
     }
 
-    // todo: spawn should happen after tween movement
     private void HandleBlockSpawned(BlockSpawnedChange blockSpawnedChange) {
         GD.Print(
             $"Block in row {blockSpawnedChange.NewBlockPosition.Row}, column {blockSpawnedChange.NewBlockPosition.Column}" +
@@ -97,10 +102,12 @@ public partial class App : Control {
         blockNode.CustomMinimumSize = (GetInnerGridField(gridCellNode).Size / 2).ToVector2I();
 
         var tween = CreateTween();
-        tween.TweenProperty(blockNode, "custom_minimum_size", GetInnerGridField(gridCellNode).Size.ToVector2I(), 0.3f);
+        tween.TweenProperty(blockNode, "custom_minimum_size", GetInnerGridField(gridCellNode).Size.ToVector2I(), SpawnAnimationTime);
+        running++;
         tween.Finished += () => {
             blockNode.SizeFlagsHorizontal = (int)SizeFlags.Fill;
             blockNode.SizeFlagsVertical = (int)SizeFlags.Fill;
+            running--;
         };
     }
 
@@ -130,9 +137,9 @@ public partial class App : Control {
         var targetGridNode = GetGridNode(blocksMergedChange.MergeReceiverPosition);
         var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
         blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
-
-
+        
         TweenMovement(initialGridNode, targetGridNode, blockToMove.Value, blockToMergeTo);
+
         if (blocksMergedChange.NewBlockValue == 2048) {
             _banner.Show(true, _scoreKeeper.Score);
         }
@@ -142,7 +149,8 @@ public partial class App : Control {
         _banner.Show(false, _scoreKeeper.Score);
     }
 
-    private void TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
+    private Tween TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue, BlockNode targetNode) {
+        running++;
         targetNode.Visible = false;
 
         var blockToTween = CreateBlockNode();
@@ -154,12 +162,14 @@ public partial class App : Control {
         blockToTween.CustomMinimumSize = (GetInnerGridField(initialGridCell).Size).ToVector2I();
 
         var tween = CreateTween();
-        tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, 0.2f);
+        tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, MoveAnimationTime);
 
         tween.Finished += () => {
             RemoveChild(blockToTween);
             targetNode.Visible = true;
+            running--;
         };
+        return tween;
     }
 
     private void HandleRestartButtonClicked() {
