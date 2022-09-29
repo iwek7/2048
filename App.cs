@@ -165,7 +165,7 @@ public partial class App : Control {
         AddChild(blockToTween);
         blockToTween.Value = tweenBlockValue;
         
-        blockToTween.CustomMinimumSize = (GetInnerGridField(initialGridCell).Size).ToVector2I();
+        blockToTween.CustomMinimumSize = GetInnerGridField(initialGridCell).Size.ToVector2I();
 
         var tween = CreateTween();
         tween.SetEase(Tween.EaseType.In);

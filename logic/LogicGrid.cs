@@ -109,7 +109,7 @@ public class LogicGrid {
                         Row = rowIdx,
                         Column = newRow.Count
                     });
-                    cell.moveBlockTo(newCell);
+                    newCell.assignBlock(cell.Block);
                     newRow.Add(newCell);
                     if (cell.GridPosition != newCell.GridPosition) {
                         // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
@@ -189,16 +189,6 @@ public class LogicGrid {
             }
 
             Block = block;
-        }
-
-        // todo: replace this usage with assignBlock, mutability sux
-        internal void moveBlockTo(Cell otherCell) {
-            if (Block == null) {
-                throw new ArgumentException($"Trying to move block from cell that has no block {GridPosition}");
-            }
-
-            otherCell.assignBlock(Block);
-            Block = null;
         }
     }
 

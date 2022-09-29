@@ -12,7 +12,7 @@ config_version=5
 
 config/name="2048 V 2"
 run/main_scene="res://app.tscn"
-config/features=PackedStringArray("4.0", "C#", "Vulkan Clustered")
+config/features=PackedStringArray("4.0", "C#")
 config/icon="res://icon.svg"
 
 [dotnet]

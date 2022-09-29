@@ -2,3 +2,6 @@
 - color scheme sux
 - merged block should slightly grow and shrink to indicate successful merge
 - add readme with screenshot
+- block should appear after movement
+- code todos
+- profile memory
