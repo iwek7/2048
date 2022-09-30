@@ -46,7 +46,10 @@ public partial class App : Control {
     public override void _UnhandledInput(InputEvent inputEvent) {
         base._UnhandledInput(inputEvent);
         if (inputEvent is not InputEventKey { Pressed: true } keyboardEvent) return;
-        if (running > 0) return;
+        if (running > 0) {
+            GD.Print("Animations are not finished and move is not enabled");
+            return;
+        }
         
         switch (keyboardEvent.Keycode) {
             case Key.Left:
