@@ -6,4 +6,3 @@
 - profile memory
 - godot warning
 - unit tests
-- blocks like this will merge incorrectly 4 2 2, move right, should result in 4 4 but will first merge 2 and 2 and then 4 which will result in 8
