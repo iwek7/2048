@@ -101,6 +101,8 @@ public partial class App : Control {
         // Here order is important, we need to first add block to the tree so that _ready is called
         // and children nodes are assigned to block node variables.
         gridCellNode.AddChild(blockNode);
+        blockNode.SizeFlagsHorizontal = (int)SizeFlags.ShrinkCenter;
+        blockNode.SizeFlagsVertical = (int)SizeFlags.ShrinkCenter;
         blockNode.Value = blockSpawnedChange.NewBlockValue;
         blockNode.CustomMinimumSize = (GetInnerGridField(gridCellNode).Size / 2).ToVector2I();
 
@@ -168,7 +170,7 @@ public partial class App : Control {
         AddChild(blockToTween);
         blockToTween.Value = tweenBlockValue;
         
-        blockToTween.CustomMinimumSize = GetInnerGridField(initialGridCell).Size.ToVector2I();
+        blockToTween.Size = GetInnerGridField(initialGridCell).Size.ToVector2I();
 
         var tween = CreateTween();
         tween.SetEase(Tween.EaseType.In);
