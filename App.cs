@@ -18,7 +18,7 @@ public partial class App : Control {
     // allow next move only when all animations of previous move finished
     private int running = 0;
     private const float MoveAnimationTime = 0.2f;
-    private const float SpawnAnimationTime = 0.15f;
+    private const float SpawnAnimationTime = 0.2f;
     
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
@@ -50,22 +50,22 @@ public partial class App : Control {
             GD.Print("Animations are not finished and move is not enabled");
             return;
         }
-        
+
         switch (keyboardEvent.Keycode) {
             case Key.Left:
-                GD.Print("Move left");
+                GD.Print("Handle move left input");
                 HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Left));
                 break;
             case Key.Up:
-                GD.Print("Move up");
+                GD.Print("Handle move up input");
                 HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Up));
                 break;
             case Key.Right:
-                GD.Print("Move right");
+                GD.Print("Handle move right input");
                 HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Right));
                 break;
             case Key.Down:
-                GD.Print("Move down");
+                GD.Print("Handle move down input");
                 HandleGridChanges(_logicGrid.UpdateWithMove(MoveDirection.Down));
                 break;
         }
@@ -100,18 +100,35 @@ public partial class App : Control {
         var gridCellNode = GetGridNode(blockSpawnedChange.NewBlockPosition);
         // Here order is important, we need to first add block to the tree so that _ready is called
         // and children nodes are assigned to block node variables.
+
         gridCellNode.AddChild(blockNode);
-        blockNode.SizeFlagsHorizontal = (int)SizeFlags.ShrinkCenter;
-        blockNode.SizeFlagsVertical = (int)SizeFlags.ShrinkCenter;
+
         blockNode.Value = blockSpawnedChange.NewBlockValue;
         blockNode.CustomMinimumSize = (GetInnerGridField(gridCellNode).Size / 2).ToVector2I();
+        blockNode.Visible = false;
 
-        var tween = CreateTween();
-        tween.TweenProperty(blockNode, "custom_minimum_size", GetInnerGridField(gridCellNode).Size.ToVector2I(), SpawnAnimationTime);
+
+        // animation
+        var blockToTween = CreateBlockNode();
+        blockToTween.SizeFlagsHorizontal = (int)SizeFlags.ShrinkCenter;
+        blockToTween.SizeFlagsVertical = (int)SizeFlags.ShrinkCenter;
+        blockToTween.Size = GetInnerGridField(gridCellNode).Size.ToVector2I();
+        blockToTween.Scale = new Vector2(0.5f, 0.5f);
+        blockToTween.Position = GetInnerGridField(gridCellNode).GlobalPosition + blockToTween.Size * 0.25f;
+
+
+        AddChild(blockToTween);
+        blockToTween.Value = blockNode.Value;
+
+        var tween = CreateTween().SetParallel();
+        tween.TweenProperty(blockToTween, "scale", Vector2.One, SpawnAnimationTime);
+        tween.TweenProperty(blockToTween, "position", GetInnerGridField(gridCellNode).GlobalPosition,
+            SpawnAnimationTime);
+
         running++;
         tween.Finished += () => {
-            blockNode.SizeFlagsHorizontal = (int)SizeFlags.Fill;
-            blockNode.SizeFlagsVertical = (int)SizeFlags.Fill;
+            RemoveChild(blockToTween);
+            blockNode.Visible = true;
             running--;
         };
     }
@@ -128,9 +145,7 @@ public partial class App : Control {
 
         blockToMove.Visible = false;
         var tween = TweenMovement(initialGridNode, targetGridNode, blockToMove.Value);
-        tween.Finished += () => {
-            blockToMove.Visible = true;
-        };
+        tween.Finished += () => { blockToMove.Visible = true; };
     }
 
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
@@ -146,11 +161,9 @@ public partial class App : Control {
         // and update the other
         var targetGridNode = GetGridNode(blocksMergedChange.MergeReceiverPosition);
         var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
-        
+
         var tween = TweenMovement(initialGridNode, targetGridNode, blockToMove.Value);
-        tween.Finished += () => {
-            blockToMergeTo.Value = blocksMergedChange.NewBlockValue;
-        };
+        tween.Finished += () => { blockToMergeTo.Value = blocksMergedChange.NewBlockValue; };
 
         if (blocksMergedChange.NewBlockValue == 2048) {
             _banner.Show(true, _scoreKeeper.Score);
@@ -169,12 +182,13 @@ public partial class App : Control {
         blockToTween.Position = GetInnerGridField(initialGridCell).GlobalPosition;
         AddChild(blockToTween);
         blockToTween.Value = tweenBlockValue;
-        
+
         blockToTween.Size = GetInnerGridField(initialGridCell).Size.ToVector2I();
 
         var tween = CreateTween();
         tween.SetEase(Tween.EaseType.In);
-        tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition, MoveAnimationTime);
+        tween.TweenProperty(blockToTween, "position", GetInnerGridField(targetGridCell).GlobalPosition,
+            MoveAnimationTime);
 
         tween.Finished += () => {
             RemoveChild(blockToTween);
@@ -220,6 +234,6 @@ public partial class App : Control {
 // todo move this to some utils file and add rounding modes
 public static class GodotExtensions {
     public static Vector2i ToVector2I(this Vector2 vec) {
-        return new Vector2i((int) vec.x, (int) vec.y);
+        return new Vector2i((int)vec.x, (int)vec.y);
     }
 }

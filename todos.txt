@@ -1,4 +1,3 @@
-- weird movement of grid when moving and spawning new blocks (visible only when there are already existing blocks)
 - color scheme sux
 - merged block should slightly grow and shrink to indicate successful merge
 - add readme with screenshot
