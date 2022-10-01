@@ -13,7 +13,7 @@ public record GridPosition {
 }
 
 public class LogicGrid {
-    private Grid _grid = new();
+    public List<List<Cell>> Grid { get; private set; } = new();
     private Random _rng = new(); // todo: inject
 
 
@@ -24,7 +24,7 @@ public class LogicGrid {
                 row.Add(new Cell(new GridPosition { Row = i, Column = j }));
             }
 
-            _grid.Add(row);
+            Grid.Add(row);
         }
     }
 
@@ -38,9 +38,9 @@ public class LogicGrid {
     }
 
     public List<IGridChange> UpdateWithMove(MoveDirection moveDirection) {
-        var moveResult = ApplyMoveWithTransforms(moveDirection, _grid);
+        var moveResult = ApplyMoveWithTransforms(moveDirection, Grid);
 
-        _grid = moveResult.GridAfterMove;
+        Grid = moveResult.GridAfterMove;
 
         // new cell is spawned only if move actually moves something
         // it also ensures that there is free space in grid
@@ -150,10 +150,10 @@ public class LogicGrid {
     private bool NoMovesLeft() {
         return GetEmptyCells().Count == 0 && // if there is space to move then move is obviously possible
                // try moving in every direction and see if any change happens
-               ApplyMoveWithTransforms(MoveDirection.Left, _grid).GridChanges.Count == 0 &&
-               ApplyMoveWithTransforms(MoveDirection.Right, _grid).GridChanges.Count == 0 &&
-               ApplyMoveWithTransforms(MoveDirection.Up, _grid).GridChanges.Count == 0 &&
-               ApplyMoveWithTransforms(MoveDirection.Down, _grid).GridChanges.Count == 0;
+               ApplyMoveWithTransforms(MoveDirection.Left, Grid).GridChanges.Count == 0 &&
+               ApplyMoveWithTransforms(MoveDirection.Right, Grid).GridChanges.Count == 0 &&
+               ApplyMoveWithTransforms(MoveDirection.Up, Grid).GridChanges.Count == 0 &&
+               ApplyMoveWithTransforms(MoveDirection.Down, Grid).GridChanges.Count == 0;
     }
 
     // it returns cell in which block was spawned
@@ -171,7 +171,7 @@ public class LogicGrid {
     }
 
     private List<Cell> GetEmptyCells() {
-        return (from row in _grid from cell in row where cell.IsEmpty() select cell).ToList();
+        return (from row in Grid from cell in row where cell.IsEmpty() select cell).ToList();
     }
 
     internal record MoveResult {
@@ -179,7 +179,7 @@ public class LogicGrid {
         internal List<IGridChange> GridChanges { get; init; }
     }
 
-    internal class Cell {
+    public class Cell {
         public GridPosition GridPosition { get; }
         public Block Block;
 
@@ -201,7 +201,7 @@ public class LogicGrid {
         }
     }
 
-    internal class Block {
+    public class Block {
         public int Value { get; private set; }
 
         // todo: make static constructor for set types of blocks instead
