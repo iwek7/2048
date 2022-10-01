@@ -14,10 +14,11 @@ public record GridPosition {
 
 public class LogicGrid {
     public List<List<Cell>> Grid { get; private set; } = new();
-    private Random _rng = new(); // todo: inject
+    private readonly Random _rng;
 
 
-    public LogicGrid(int gridDimension) {
+    public LogicGrid(int gridDimension, Random rng) {
+        _rng = rng;
         for (var i = 0; i < gridDimension; i++) {
             List<Cell> row = new();
             for (var j = 0; j < gridDimension; j++) {
@@ -174,7 +175,7 @@ public class LogicGrid {
         return (from row in Grid from cell in row where cell.IsEmpty() select cell).ToList();
     }
 
-    internal record MoveResult {
+    private record MoveResult {
         internal Grid GridAfterMove { get; init; }
         internal List<IGridChange> GridChanges { get; init; }
     }

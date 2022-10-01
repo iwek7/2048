@@ -7,9 +7,9 @@ public class Tests {
     public void Setup() { }
 
     [Test]
-    public void Test1() {
+    public void GridHasCorrectSize() {
         // given
-        var logicGrid = new LogicGrid(4);
+        var logicGrid = new LogicGrid(4, new TestRandom());
         
         // when
         var grid = logicGrid.Grid;
@@ -19,5 +19,15 @@ public class Tests {
         foreach (var row in grid) {
             Assert.AreEqual(4, row.Capacity);
         }
+    }
+}
+
+internal class TestRandom : Random {
+    public override int Next() {
+        return base.Next();
+    }
+
+    public override double NextDouble() {
+        return base.NextDouble();
     }
 }

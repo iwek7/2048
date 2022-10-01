@@ -38,7 +38,7 @@ public partial class App : Control {
         ((Button)FindChild("TestLoseButton")).Pressed += () => { _banner.Show(false, _scoreKeeper.Score); };
         ((Button)FindChild("TestWinButton")).Pressed += () => { _banner.Show(true, _scoreKeeper.Score); };
 
-        _logicGrid = new LogicGrid(GridDimension);
+        _logicGrid = new LogicGrid(GridDimension, new Random());
 
         HandleBlockSpawned(_logicGrid.Initialize());
     }
@@ -208,7 +208,7 @@ public partial class App : Control {
             }
         }
 
-        _logicGrid = new LogicGrid(GridDimension);
+        _logicGrid = new LogicGrid(GridDimension, new Random());
         HandleBlockSpawned(_logicGrid.Initialize());
 
         GD.Print("Restarted game!");
