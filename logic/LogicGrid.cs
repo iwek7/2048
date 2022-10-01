@@ -13,6 +13,7 @@ public record GridPosition {
 }
 
 public class LogicGrid {
+    // todo: revert this to private
     public List<List<Cell>> Grid { get; private set; } = new();
     private readonly Random _rng;
 
@@ -27,6 +28,11 @@ public class LogicGrid {
 
             Grid.Add(row);
         }
+    }
+
+    public LogicGrid(List<List<Cell>> grid, Random rng) {
+        Grid = grid;
+        _rng = rng;
     }
 
     // todo: somehow prevent calling initialize twice
@@ -184,7 +190,7 @@ public class LogicGrid {
         public GridPosition GridPosition { get; }
         public Block Block;
 
-        internal Cell(GridPosition gridPosition) {
+        public Cell(GridPosition gridPosition) {
             GridPosition = gridPosition;
         }
 
@@ -193,7 +199,7 @@ public class LogicGrid {
         }
 
         // todo: research nullability
-        internal void assignBlock(Block block) {
+        public void assignBlock(Block block) {
             if (Block != null) {
                 throw new ArgumentException($"Trying to put block into not empty grid cell {GridPosition}");
             }
@@ -206,7 +212,7 @@ public class LogicGrid {
         public int Value { get; private set; }
 
         // todo: make static constructor for set types of blocks instead
-        internal Block(int value) {
+        public Block(int value) {
             Value = value;
         }
 
