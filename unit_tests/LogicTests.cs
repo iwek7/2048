@@ -156,7 +156,63 @@ public class LogicTests {
             1
         );
     }
-
+    
+    [Test]
+    public void ShouldMergeOnlyTwoBlocksWhenThereAreThreeBlocksInARow() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                2, 2, 2, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            }),
+            MoveDirection.Left,
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 0, Column = 2 },
+                    TargetPosition = new GridPosition { Row = 0, Column = 1 }
+                }
+            },
+            new HashSet<BlocksMergedChange> {
+                new() {
+                    MergeReceiverPosition = new GridPosition {  Row = 0, Column = 0},
+                    NewBlockValue = 4,
+                    MergedBlockInitialPosition = new GridPosition {  Row = 0, Column = 1}
+                }
+            },
+            1
+        );
+    }
+    
+    [Test]
+    public void ShouldMergeOnlyTwoBlocksWhenThereAreThreeBlocksInARowWithDifferentValues() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                2, 2, 4, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            }),
+            MoveDirection.Left,
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 0, Column = 2 },
+                    TargetPosition = new GridPosition { Row = 0, Column = 1 }
+                }
+            },
+            new HashSet<BlocksMergedChange> {
+                new() {
+                    MergeReceiverPosition = new GridPosition {  Row = 0, Column = 0},
+                    NewBlockValue = 4,
+                    MergedBlockInitialPosition = new GridPosition {  Row = 0, Column = 1}
+                }
+            },
+            1
+        );
+    }
+    
+    
+    
     private void assertGrid(
         List<List<LogicGrid.Cell>> grid,
         MoveDirection moveDirection,
@@ -171,9 +227,15 @@ public class LogicTests {
         var changes = logicGrid.UpdateWithMove(moveDirection);
 
         // then
+
+        foreach (var change in changes) {
+            Console.WriteLine(change);
+        }
+        
         // todo common method for all types?
         var moveChanges = (from change in changes where change is BlockMovedChange select (BlockMovedChange)change)
             .ToHashSet();
+   
         Assert.IsTrue(expectedBlockMoveChanges.SetEquals(moveChanges));
 
         var mergeChanges = (from change in changes where change is BlocksMergedChange select (BlocksMergedChange)change)

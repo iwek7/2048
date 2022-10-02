@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,10 +18,10 @@ namespace RiderTestRunner
         public override void _Ready()
         {
 
-            //while (!Debugger.IsAttached)
-            {
-                
-            }
+            // while (!Debugger.IsAttached)
+            // {
+            //     
+            // }
 
             
             // GDU.Instance = this; // for GodotXUnit https://github.com/fledware/GodotXUnit/issues/8#issuecomment-929849478

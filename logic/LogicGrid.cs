@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Godot;
 
 namespace Logic;
 
@@ -60,7 +61,7 @@ public class LogicGrid {
         }
 
         // check lose condition
-        // if no moves occured then this condition was evaluated during previous move, hance checking current moveResult
+        // if no moves occured then this condition was evaluated during previous move, hence checking current moveResult
         if (moveResult.GridChanges.Count > 0 && NoMovesLeft()) {
             moveResult.GridChanges.Add(new NoMovesLeftChange());
         }
@@ -101,26 +102,27 @@ public class LogicGrid {
             List<Cell> newRow = new();
             foreach (var cell in transformedGrid[rowIdx].Where(cell => !cell.IsEmpty())) {
                 // try to merge
-                if (newRow.Count > 0 && newRow.Last().Block.mergeWith(cell.Block)) {
-                    // this is to account for situation like 2 2 4, without this check first this will merge into 8 because 2 merges will happen
-                    // this check does not allow merging one cell twice in one move
-                    if ((from change in changes
-                            where change is BlocksMergedChange mergedChange &&
-                                  mergedChange.MergeReceiverPosition == newRow.Last().GridPosition
-                            select change).ToList().Count == 0) {
-                        // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
-                        changes.Add(
-                            new BlocksMergedChange {
-                                // todo: instead of transposing grid position everywhere transpose move result, this method does not need to know anything about transformers
-                                MergedBlockInitialPosition =
-                                    reverseTransformer.TransposeGridPosition(cell.GridPosition),
-                                MergeReceiverPosition =
-                                    reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition),
-                                NewBlockValue = newRow.Last().Block.Value
-                            }
-                        );
-                    }
-                } else {
+                // last condition is to account for situation like 2 2 4, without this check first this will merge into 8 because 2 merges will happen
+                // this check does not allow merging one cell twice in one move
+                if (newRow.Count > 0 &&
+                    newRow.Last().Block.mergeWith(cell.Block)
+                    && (from change in changes
+                        where change is BlocksMergedChange mergedChange &&
+                              mergedChange.MergeReceiverPosition == newRow.Last().GridPosition
+                        select change).ToList().Count == 0) {
+                    // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions;
+                    changes.Add(
+                        new BlocksMergedChange {
+                            // todo: instead of transposing grid position everywhere transpose move result, this method does not need to know anything about transformers
+                            MergedBlockInitialPosition =
+                                reverseTransformer.TransposeGridPosition(cell.GridPosition),
+                            MergeReceiverPosition =
+                                reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition),
+                            NewBlockValue = newRow.Last().Block.Value
+                        }
+                    );
+                }
+                else {
                     var newCell = new Cell(new GridPosition {
                         Row = rowIdx,
                         Column = newRow.Count
