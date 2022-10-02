@@ -25,7 +25,9 @@ public class LogicTests {
                     InitialPosition = new GridPosition { Row = 0, Column = 0 },
                     TargetPosition = new GridPosition { Row = 0, Column = 3 }
                 }
-            }
+            },
+            new HashSet<BlocksMergedChange>(),
+            1
         );
     }
 
@@ -44,7 +46,9 @@ public class LogicTests {
                     InitialPosition = new GridPosition { Row = 0, Column = 3 },
                     TargetPosition = new GridPosition { Row = 0, Column = 0 }
                 }
-            }
+            },
+            new HashSet<BlocksMergedChange>(),
+            1
         );
     }
 
@@ -63,7 +67,9 @@ public class LogicTests {
                     InitialPosition = new GridPosition { Row = 0, Column = 0 },
                     TargetPosition = new GridPosition { Row = 3, Column = 0 }
                 }
-            }
+            },
+            new HashSet<BlocksMergedChange>(),
+            1
         );
     }
 
@@ -82,7 +88,9 @@ public class LogicTests {
                     InitialPosition = new GridPosition { Row = 3, Column = 0 },
                     TargetPosition = new GridPosition { Row = 0, Column = 0 }
                 }
-            }
+            },
+            new HashSet<BlocksMergedChange>(),
+            1
         );
     }
 
@@ -105,14 +113,57 @@ public class LogicTests {
                     InitialPosition = new GridPosition { Row = 3, Column = 1 },
                     TargetPosition = new GridPosition { Row = 0, Column = 1 }
                 }
-            }
+            },
+            new HashSet<BlocksMergedChange>(),
+            1
+        );
+    }
+    
+    [Test]
+    public void ShouldNotMoveAndSpawnBlocksWhenMovementIsNotPossible() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                2, 2, 4, 2,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            }),
+            MoveDirection.Up,
+            new HashSet<BlockMovedChange>(),
+            new HashSet<BlocksMergedChange>(),
+            0
+        );
+    }
+
+    [Test]
+    public void ShouldMergeTwoBlocks() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                2, 2, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            }),
+            MoveDirection.Left,
+            new HashSet<BlockMovedChange>(),
+            new HashSet<BlocksMergedChange> {
+                new() {
+                    MergeReceiverPosition = new GridPosition {  Row = 0, Column = 0},
+                    NewBlockValue = 4,
+                    MergedBlockInitialPosition = new GridPosition {  Row = 0, Column = 1}
+                }
+            },
+            1
         );
     }
 
     private void assertGrid(
         List<List<LogicGrid.Cell>> grid,
         MoveDirection moveDirection,
-        IReadOnlySet<BlockMovedChange> expectedBlockMoveChanges) {
+        IReadOnlySet<BlockMovedChange> expectedBlockMoveChanges,
+        IReadOnlySet<BlocksMergedChange> expectedMergeChanges,
+        int expectedNumberOfSpawns
+    ) {
         // given
         var logicGrid = new LogicGrid(grid, _testRng);
 
@@ -125,9 +176,13 @@ public class LogicTests {
             .ToHashSet();
         Assert.IsTrue(expectedBlockMoveChanges.SetEquals(moveChanges));
 
+        var mergeChanges = (from change in changes where change is BlocksMergedChange select (BlocksMergedChange)change)
+            .ToHashSet();
+        Assert.IsTrue(expectedMergeChanges.SetEquals(mergeChanges));
+
         var spawnChanges = (from change in changes where change is BlockSpawnedChange select (BlockSpawnedChange)change)
             .ToList();
-        Assert.AreEqual(1, spawnChanges.Count);
+        Assert.AreEqual(expectedNumberOfSpawns, spawnChanges.Count);
     }
 }
 
