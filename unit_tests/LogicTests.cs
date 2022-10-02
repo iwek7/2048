@@ -9,30 +9,80 @@ public class LogicTests {
     public void Setup() {
         _testRng = new TestRandom();
     }
-    
-    [Test, TestCaseSource(nameof(MovementTestCases))]
-    public void ShouldMoveCell(
-        GridPosition initialGridPosition,
-        MoveDirection moveDirection,
-        GridPosition expectedGridPosition) {
-        // given
 
-        // todo: move this to some builder
-        List<List<LogicGrid.Cell>> grid = new();
-        for (var i = 0; i < 4; i++) {
-            List<LogicGrid.Cell> row = new();
-            for (var j = 0; j < 4; j++) {
-                var newCell = new LogicGrid.Cell(new GridPosition { Row = i, Column = j });
-                if (newCell.GridPosition == initialGridPosition) {
-                    newCell.assignBlock(new LogicGrid.Block(2));
-                }
-
-                row.Add(newCell);
+    [Test]
+    public void ShouldMoveCellRight() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                2, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            }),
+            MoveDirection.Right,
+            new BlockMovedChange {
+                InitialPosition = new GridPosition { Row = 0, Column = 0 },
+                TargetPosition = new GridPosition { Row = 0, Column = 3 }
             }
+        );
+    }
+    
+   [Test]
+    public void ShouldMoveCellLeft() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                0, 0, 0, 2,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            }),
+            MoveDirection.Left,
+            new BlockMovedChange {
+                InitialPosition = new GridPosition { Row = 0, Column = 3 },
+                TargetPosition = new GridPosition { Row = 0, Column = 0 }
+            }
+        );
+    }
+    
+    [Test]
+    public void ShouldMoveCellDown() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                2, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0
+            }),
+            MoveDirection.Down,
+            new BlockMovedChange {
+                InitialPosition = new GridPosition { Row = 0, Column = 0 },
+                TargetPosition = new GridPosition { Row = 3, Column = 0 }
+            }
+        );
+    }
+    
+    [Test]
+    public void ShouldMoveCellUp() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                2, 0, 0, 0
+            }),
+            MoveDirection.Up,
+            new BlockMovedChange {
+                InitialPosition = new GridPosition { Row = 3, Column = 0 },
+                TargetPosition = new GridPosition { Row = 0, Column = 0 }
+            }
+        );
+    }
 
-            grid.Add(row);
-        }
-
+    private void assertGrid(
+        List<List<LogicGrid.Cell>> grid,
+        MoveDirection moveDirection,
+        BlockMovedChange expectedBlockMoveChange) {
+        // given
         var logicGrid = new LogicGrid(grid, _testRng);
 
         // when
@@ -44,29 +94,10 @@ public class LogicTests {
         var moveChanges = (from change in changes where change is BlockMovedChange select change).ToList();
         Assert.AreEqual(1, moveChanges.Count);
 
-        var moveChange = (BlockMovedChange)moveChanges[0];
-        Assert.AreEqual(
-            initialGridPosition,
-            moveChange.InitialPosition
-        );
-        Assert.AreEqual(
-            expectedGridPosition,
-            moveChange.TargetPosition
-        );
+        Assert.AreEqual(expectedBlockMoveChange, (BlockMovedChange)moveChanges[0]);
 
         var spawnChanges = (from change in changes where change is BlockSpawnedChange select change).ToList();
         Assert.AreEqual(1, spawnChanges.Count);
-    }
-
-    public static IEnumerable<TestCaseData> MovementTestCases() {
-        yield return new TestCaseData(new GridPosition { Row = 0, Column = 0 }, MoveDirection.Right,
-            new GridPosition { Row = 0, Column = 3 });
-        yield return new TestCaseData(new GridPosition { Row = 0, Column = 0 }, MoveDirection.Down,
-            new GridPosition { Row = 3, Column = 0 });
-        yield return new TestCaseData(new GridPosition { Row = 0, Column = 3 }, MoveDirection.Left,
-            new GridPosition { Row = 0, Column = 0 });
-        yield return new TestCaseData(new GridPosition { Row = 3, Column = 0 }, MoveDirection.Up,
-            new GridPosition { Row = 0, Column = 0 });
     }
 }
 
@@ -84,10 +115,26 @@ internal class TestRandom : Random {
     }
 }
 
-// internal class GridBuilder {
-//
-//     static List<List<LogicGrid.Cell>> BuildGridWithBlock(LogicGrid.Block block) {
-//         
-//     }
-//     
-// }
+internal static class GridBuilder {
+    internal static List<List<LogicGrid.Cell>> BuildGrid(int[] schema) {
+        Assert.AreEqual(16, schema.Length);
+
+        List<List<LogicGrid.Cell>> grid = new();
+        for (var i = 0; i < 4; i++) {
+            List<LogicGrid.Cell> row = new();
+            for (var j = 0; j < 4; j++) {
+                var newCell = new LogicGrid.Cell(new GridPosition { Row = i, Column = j });
+                var schemaValue = schema[i * 4 + j];
+                if (schemaValue != 0) {
+                    newCell.assignBlock(new LogicGrid.Block(schemaValue));
+                }
+
+                row.Add(newCell);
+            }
+
+            grid.Add(row);
+        }
+
+        return grid;
+    }
+}
