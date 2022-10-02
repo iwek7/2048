@@ -20,14 +20,16 @@ public class LogicTests {
                 0, 0, 0, 0
             }),
             MoveDirection.Right,
-            new BlockMovedChange {
-                InitialPosition = new GridPosition { Row = 0, Column = 0 },
-                TargetPosition = new GridPosition { Row = 0, Column = 3 }
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 0, Column = 0 },
+                    TargetPosition = new GridPosition { Row = 0, Column = 3 }
+                }
             }
         );
     }
-    
-   [Test]
+
+    [Test]
     public void ShouldMoveCellLeft() {
         assertGrid(
             GridBuilder.BuildGrid(new[] {
@@ -37,13 +39,15 @@ public class LogicTests {
                 0, 0, 0, 0
             }),
             MoveDirection.Left,
-            new BlockMovedChange {
-                InitialPosition = new GridPosition { Row = 0, Column = 3 },
-                TargetPosition = new GridPosition { Row = 0, Column = 0 }
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 0, Column = 3 },
+                    TargetPosition = new GridPosition { Row = 0, Column = 0 }
+                }
             }
         );
     }
-    
+
     [Test]
     public void ShouldMoveCellDown() {
         assertGrid(
@@ -54,13 +58,15 @@ public class LogicTests {
                 0, 0, 0, 0
             }),
             MoveDirection.Down,
-            new BlockMovedChange {
-                InitialPosition = new GridPosition { Row = 0, Column = 0 },
-                TargetPosition = new GridPosition { Row = 3, Column = 0 }
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 0, Column = 0 },
+                    TargetPosition = new GridPosition { Row = 3, Column = 0 }
+                }
             }
         );
     }
-    
+
     [Test]
     public void ShouldMoveCellUp() {
         assertGrid(
@@ -71,9 +77,34 @@ public class LogicTests {
                 2, 0, 0, 0
             }),
             MoveDirection.Up,
-            new BlockMovedChange {
-                InitialPosition = new GridPosition { Row = 3, Column = 0 },
-                TargetPosition = new GridPosition { Row = 0, Column = 0 }
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 3, Column = 0 },
+                    TargetPosition = new GridPosition { Row = 0, Column = 0 }
+                }
+            }
+        );
+    }
+
+    [Test]
+    public void ShouldMoveMultipleBlocks() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                2, 2, 0, 0
+            }),
+            MoveDirection.Up,
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 3, Column = 0 },
+                    TargetPosition = new GridPosition { Row = 0, Column = 0 }
+                },
+                new() {
+                    InitialPosition = new GridPosition { Row = 3, Column = 1 },
+                    TargetPosition = new GridPosition { Row = 0, Column = 1 }
+                }
             }
         );
     }
@@ -81,7 +112,7 @@ public class LogicTests {
     private void assertGrid(
         List<List<LogicGrid.Cell>> grid,
         MoveDirection moveDirection,
-        BlockMovedChange expectedBlockMoveChange) {
+        IReadOnlySet<BlockMovedChange> expectedBlockMoveChanges) {
         // given
         var logicGrid = new LogicGrid(grid, _testRng);
 
@@ -89,14 +120,13 @@ public class LogicTests {
         var changes = logicGrid.UpdateWithMove(moveDirection);
 
         // then
-        Assert.AreEqual(2, changes.Count);
-        // todo is it possible to return list of move changes here?, at least create helper method
-        var moveChanges = (from change in changes where change is BlockMovedChange select change).ToList();
-        Assert.AreEqual(1, moveChanges.Count);
+        // todo common method for all types?
+        var moveChanges = (from change in changes where change is BlockMovedChange select (BlockMovedChange)change)
+            .ToHashSet();
+        Assert.IsTrue(expectedBlockMoveChanges.SetEquals(moveChanges));
 
-        Assert.AreEqual(expectedBlockMoveChange, (BlockMovedChange)moveChanges[0]);
-
-        var spawnChanges = (from change in changes where change is BlockSpawnedChange select change).ToList();
+        var spawnChanges = (from change in changes where change is BlockSpawnedChange select (BlockSpawnedChange)change)
+            .ToList();
         Assert.AreEqual(1, spawnChanges.Count);
     }
 }
