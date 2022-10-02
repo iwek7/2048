@@ -2,7 +2,7 @@ using Logic;
 
 namespace unit_tests;
 
-public class Tests {
+public class LogicTests {
     private TestRandom _testRng;
 
     [SetUp]
@@ -10,12 +10,11 @@ public class Tests {
         _testRng = new TestRandom();
     }
     
-    [TestCase(0, 0, MoveDirection.Right, 0, 3)]
-    [TestCase(0, 0, MoveDirection.Down, 3, 0)]
-    [TestCase(0, 3, MoveDirection.Left, 0, 0)]
-    [TestCase(3, 0, MoveDirection.Up, 0, 0)]
-    public void ShouldMoveCell(int initialGridRow, int initialGridCol,
-        MoveDirection moveDirection, int expectedGridRow, int expectedGridCol) {
+    [Test, TestCaseSource(nameof(MovementTestCases))]
+    public void ShouldMoveCell(
+        GridPosition initialGridPosition,
+        MoveDirection moveDirection,
+        GridPosition expectedGridPosition) {
         // given
 
         // todo: move this to some builder
@@ -24,7 +23,7 @@ public class Tests {
             List<LogicGrid.Cell> row = new();
             for (var j = 0; j < 4; j++) {
                 var newCell = new LogicGrid.Cell(new GridPosition { Row = i, Column = j });
-                if (i == initialGridRow && j == initialGridCol) {
+                if (newCell.GridPosition == initialGridPosition) {
                     newCell.assignBlock(new LogicGrid.Block(2));
                 }
 
@@ -47,16 +46,27 @@ public class Tests {
 
         var moveChange = (BlockMovedChange)moveChanges[0];
         Assert.AreEqual(
-            new GridPosition { Row = initialGridRow, Column = initialGridCol },
+            initialGridPosition,
             moveChange.InitialPosition
         );
         Assert.AreEqual(
-            new GridPosition { Row = expectedGridRow, Column = expectedGridCol },
+            expectedGridPosition,
             moveChange.TargetPosition
         );
 
         var spawnChanges = (from change in changes where change is BlockSpawnedChange select change).ToList();
         Assert.AreEqual(1, spawnChanges.Count);
+    }
+
+    public static IEnumerable<TestCaseData> MovementTestCases() {
+        yield return new TestCaseData(new GridPosition { Row = 0, Column = 0 }, MoveDirection.Right,
+            new GridPosition { Row = 0, Column = 3 });
+        yield return new TestCaseData(new GridPosition { Row = 0, Column = 0 }, MoveDirection.Down,
+            new GridPosition { Row = 3, Column = 0 });
+        yield return new TestCaseData(new GridPosition { Row = 0, Column = 3 }, MoveDirection.Left,
+            new GridPosition { Row = 0, Column = 0 });
+        yield return new TestCaseData(new GridPosition { Row = 3, Column = 0 }, MoveDirection.Up,
+            new GridPosition { Row = 0, Column = 0 });
     }
 }
 
