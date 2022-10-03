@@ -4,7 +4,7 @@ using System.Linq;
 namespace Logic; 
 using Grid = List<List<LogicGrid.Cell>>;
 
-internal interface IGridTransformer {
+public interface IGridTransformer {
     Grid TransposeGrid(Grid grid);
     GridPosition TransposeGridPosition(GridPosition gridPosition);
 }
@@ -85,15 +85,5 @@ internal class CompositeGridTransformer : IGridTransformer {
         return _transformers.Aggregate(gridPosition,
             (current, transformer) => transformer.TransposeGridPosition(current)
         );
-    }
-}
-
-internal class IdentityGridTransformer : IGridTransformer {
-    public Grid TransposeGrid(Grid grid) {
-        return grid;
-    }
-
-    public GridPosition TransposeGridPosition(GridPosition gridPosition) {
-        return gridPosition;
     }
 }

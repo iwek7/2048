@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Godot;
-
 namespace Logic;
 
 using Grid = List<List<LogicGrid.Cell>>;
@@ -47,7 +42,8 @@ public class LogicGrid {
 
     public List<IGridChange> UpdateWithMove(MoveDirection moveDirection) {
         var moveResult = ApplyMoveWithTransforms(moveDirection, Grid);
-
+        Console.WriteLine("Grid before changes:");
+        DebugPrintGrid();
         Grid = moveResult.GridAfterMove;
 
         // new cell is spawned only if move actually moves something
@@ -66,41 +62,48 @@ public class LogicGrid {
             moveResult.GridChanges.Add(new NoMovesLeftChange());
         }
 
+        Console.WriteLine("Grid after changes:");
+        DebugPrintGrid();
+
         return moveResult.GridChanges;
     }
 
+    // todo: move static stuff away from here
+    private static readonly IGridTransformer RightSideTransformer = new RightSideGridTransformer();
+    private static readonly IGridTransformer LeftSideGridTransformer = new LeftSideGridTransformer();
 
     private static MoveResult ApplyMoveWithTransforms(MoveDirection moveDirection, Grid grid) {
-        return moveDirection switch {
-            MoveDirection.Right => ApplyMoveToTheLeft(grid,
-                new CompositeGridTransformer(new List<IGridTransformer> {
-                    new RightSideGridTransformer(), new RightSideGridTransformer()
-                }),
-                new CompositeGridTransformer(new List<IGridTransformer> {
-                    new LeftSideGridTransformer(), new LeftSideGridTransformer()
-                })),
-            MoveDirection.Left => ApplyMoveToTheLeft(grid, new IdentityGridTransformer(),
-                new IdentityGridTransformer()),
-            MoveDirection.Up => ApplyMoveToTheLeft(grid, new LeftSideGridTransformer(), new RightSideGridTransformer()),
-            MoveDirection.Down => ApplyMoveToTheLeft(grid, new RightSideGridTransformer(),
-                new LeftSideGridTransformer()),
-            _ => throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null)
-        };
+        switch (moveDirection) {
+            case MoveDirection.Right:
+                // todo: fix useless transformer allocation
+                var transformer = new CompositeGridTransformer(new List<IGridTransformer> {
+                    RightSideTransformer, RightSideTransformer
+                });
+                var reverseTransformer = new CompositeGridTransformer(new List<IGridTransformer> {
+                    LeftSideGridTransformer, LeftSideGridTransformer
+                });
+                return ApplyMoveToTheLeft(transformer.TransposeGrid(grid)).Transpose(reverseTransformer);
+            case MoveDirection.Left:
+                return ApplyMoveToTheLeft(grid);
+            case MoveDirection.Up:
+                return ApplyMoveToTheLeft(LeftSideGridTransformer.TransposeGrid(grid)).Transpose(RightSideTransformer);
+            case MoveDirection.Down:
+                return ApplyMoveToTheLeft(RightSideTransformer.TransposeGrid(grid)).Transpose(LeftSideGridTransformer);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null);
+        }
     }
 
     // this transforms grid using provided transformer and applies movement to left, later it applies reverse transform to grid
+    // all inputs to this method should be already transformed since it only applies move to the left
+    // likewise returned input is left site oriented
     // todo: both this objects should be part of one aggregating object
-    private static MoveResult ApplyMoveToTheLeft(
-        Grid grid,
-        IGridTransformer gridTransformer,
-        IGridTransformer reverseTransformer
-    ) {
+    private static MoveResult ApplyMoveToTheLeft(Grid grid) {
         List<IGridChange> changes = new();
-        var transformedGrid = gridTransformer.TransposeGrid(grid);
         Grid newGrid = new();
-        for (var rowIdx = 0; rowIdx < transformedGrid.Count; rowIdx++) {
+        for (var rowIdx = 0; rowIdx < grid.Count; rowIdx++) {
             List<Cell> newRow = new();
-            foreach (var cell in transformedGrid[rowIdx].Where(cell => !cell.IsEmpty())) {
+            foreach (var cell in grid[rowIdx].Where(cell => !cell.IsEmpty())) {
                 // try to merge
                 // last condition is to account for situation like 2 2 4, without this check first this will merge into 8 because 2 merges will happen
                 // this check does not allow merging one cell twice in one move
@@ -115,14 +118,10 @@ public class LogicGrid {
                     // now we need to check if merge receiver was moved, if yes then remove this move from list and instead
                     // use initial position of move as merge receiver initial position
                     // todo: rethink this ugly solution
-
-                    Console.WriteLine("HI 2010");
                     var mergeReceiverMove = (BlockMovedChange)changes.FirstOrDefault(change =>
                         change is BlockMovedChange moveChange &&
-                        moveChange.TargetPosition == reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition), null);
-                    Console.WriteLine(mergeReceiverMove);
-                    Console.WriteLine("CURRENT CHANGES");
-                    Console.WriteLine(newRow.Last().GridPosition);
+                        moveChange.TargetPosition == newRow.Last().GridPosition, null);
+
                     foreach (var change in changes) {
                         Console.WriteLine(change);
                     }
@@ -130,7 +129,7 @@ public class LogicGrid {
                     GridPosition mergeReceiverInitialPosition;
                     if (mergeReceiverMove != null) {
                         changes.Remove(mergeReceiverMove);
-                        mergeReceiverInitialPosition = gridTransformer.TransposeGridPosition(mergeReceiverMove.InitialPosition);
+                        mergeReceiverInitialPosition = mergeReceiverMove.InitialPosition;
                     }
                     else {
                         mergeReceiverInitialPosition = newRow.Last().GridPosition;
@@ -138,13 +137,9 @@ public class LogicGrid {
 
                     changes.Add(
                         new BlocksMergedChange {
-                            // todo: instead of transposing grid position everywhere transpose move result, this method does not need to know anything about transformers
-                            MergeReceiverInitialPosition =
-                                reverseTransformer.TransposeGridPosition(mergeReceiverInitialPosition),
-                            MergeReceiverTargetPosition =
-                                reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition),
-                            MergedBlockInitialPosition =
-                                reverseTransformer.TransposeGridPosition(cell.GridPosition),
+                            MergeReceiverInitialPosition = mergeReceiverInitialPosition,
+                            MergeReceiverTargetPosition = newRow.Last().GridPosition,
+                            MergedBlockInitialPosition = cell.GridPosition,
                             NewBlockValue = newRow.Last().Block.Value
                         }
                     );
@@ -159,15 +154,16 @@ public class LogicGrid {
                     if (cell.GridPosition != newCell.GridPosition) {
                         // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
                         changes.Add(new BlockMovedChange {
-                                InitialPosition = reverseTransformer.TransposeGridPosition(cell.GridPosition),
-                                TargetPosition = reverseTransformer.TransposeGridPosition(newCell.GridPosition)
+                                InitialPosition = cell.GridPosition,
+                                TargetPosition = newCell.GridPosition
                             }
                         );
                     }
                 }
             }
 
-            while (newRow.Count < transformedGrid[rowIdx].Count) {
+            // fill new row with empty cells
+            while (newRow.Count < grid[rowIdx].Count) {
                 newRow.Add(new Cell(new GridPosition {
                     Row = rowIdx,
                     Column = newRow.Count
@@ -179,7 +175,7 @@ public class LogicGrid {
 
         return new MoveResult {
             GridChanges = changes,
-            GridAfterMove = reverseTransformer.TransposeGrid(newGrid)
+            GridAfterMove = newGrid
         };
     }
 
@@ -210,9 +206,26 @@ public class LogicGrid {
         return (from row in Grid from cell in row where cell.IsEmpty() select cell).ToList();
     }
 
+    private void DebugPrintGrid() {
+        foreach (var row in Grid) {
+            foreach (var col in row) {
+                Console.Write($"{col.Block?.Value ?? 0} ");
+            }
+
+            Console.Write("\n");
+        }
+    }
+
     private record MoveResult {
         internal Grid GridAfterMove { get; init; }
         internal List<IGridChange> GridChanges { get; init; }
+
+        internal MoveResult Transpose(IGridTransformer gridTransformer) {
+            return new MoveResult {
+                GridAfterMove = gridTransformer.TransposeGrid(GridAfterMove),
+                GridChanges = (from change in GridChanges select change.Transpose(gridTransformer)).ToList()
+            };
+        }
     }
 
     public class Cell {
