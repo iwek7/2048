@@ -5,3 +5,4 @@
 - code todos
 - profile memory
 - godot warning
+- add playing on

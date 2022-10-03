@@ -108,16 +108,43 @@ public class LogicGrid {
                     newRow.Last().Block.mergeWith(cell.Block)
                     && (from change in changes
                         where change is BlocksMergedChange mergedChange &&
-                              mergedChange.MergeReceiverPosition == newRow.Last().GridPosition
+                              mergedChange.MergeReceiverTargetPosition == newRow.Last().GridPosition
                         select change).ToList().Count == 0) {
                     // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions;
+
+                    // now we need to check if merge receiver was moved, if yes then remove this move from list and instead
+                    // use initial position of move as merge receiver initial position
+                    // todo: rethink this ugly solution
+
+                    Console.WriteLine("HI 2010");
+                    var mergeReceiverMove = (BlockMovedChange)changes.FirstOrDefault(change =>
+                        change is BlockMovedChange moveChange &&
+                        moveChange.TargetPosition == reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition), null);
+                    Console.WriteLine(mergeReceiverMove);
+                    Console.WriteLine("CURRENT CHANGES");
+                    Console.WriteLine(newRow.Last().GridPosition);
+                    foreach (var change in changes) {
+                        Console.WriteLine(change);
+                    }
+
+                    GridPosition mergeReceiverInitialPosition;
+                    if (mergeReceiverMove != null) {
+                        changes.Remove(mergeReceiverMove);
+                        mergeReceiverInitialPosition = gridTransformer.TransposeGridPosition(mergeReceiverMove.InitialPosition);
+                    }
+                    else {
+                        mergeReceiverInitialPosition = newRow.Last().GridPosition;
+                    }
+
                     changes.Add(
                         new BlocksMergedChange {
                             // todo: instead of transposing grid position everywhere transpose move result, this method does not need to know anything about transformers
+                            MergeReceiverInitialPosition =
+                                reverseTransformer.TransposeGridPosition(mergeReceiverInitialPosition),
+                            MergeReceiverTargetPosition =
+                                reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition),
                             MergedBlockInitialPosition =
                                 reverseTransformer.TransposeGridPosition(cell.GridPosition),
-                            MergeReceiverPosition =
-                                reverseTransformer.TransposeGridPosition(newRow.Last().GridPosition),
                             NewBlockValue = newRow.Last().Block.Value
                         }
                     );

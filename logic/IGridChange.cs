@@ -9,7 +9,8 @@ public record BlockMovedChange : IGridChange {
 
 public record BlocksMergedChange : IGridChange {
     public GridPosition MergedBlockInitialPosition { get; init; }
-    public GridPosition MergeReceiverPosition { get; init; }
+    public GridPosition MergeReceiverTargetPosition { get; init; }
+    public GridPosition MergeReceiverInitialPosition { get; init; }
     public int NewBlockValue { get; init; }
 }
 

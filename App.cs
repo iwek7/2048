@@ -91,10 +91,7 @@ public partial class App : Control {
     }
 
     private void HandleBlockSpawned(BlockSpawnedChange blockSpawnedChange) {
-        GD.Print(
-            $"Block in row {blockSpawnedChange.NewBlockPosition.Row}, column {blockSpawnedChange.NewBlockPosition.Column}" +
-            $" was spawned with value {blockSpawnedChange.NewBlockValue}"
-        );
+        GD.Print($"Handle block spawned change {blockSpawnedChange}");
 
         var blockNode = CreateBlockNode();
         var gridCellNode = GetGridNode(blockSpawnedChange.NewBlockPosition);
@@ -134,7 +131,7 @@ public partial class App : Control {
     }
 
     private void HandleBlockMoved(BlockMovedChange blockMovedChange) {
-        GD.Print($"Moving block from {blockMovedChange.InitialPosition} to {blockMovedChange.TargetPosition}");
+        GD.Print($"Handling move change {blockMovedChange}");
         // remove node from one place
         var initialGridNode = GetGridNode(blockMovedChange.InitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
@@ -149,7 +146,7 @@ public partial class App : Control {
     }
 
     private void HandleBlocksMerged(BlocksMergedChange blocksMergedChange) {
-        // todo: add log
+        GD.Print($"Handling merge change {blocksMergedChange}");
         // remove one node
         var initialGridNode = GetGridNode(blocksMergedChange.MergedBlockInitialPosition);
         var blockToMove = initialGridNode.GetNode<BlockNode>(BlockNodeName);
@@ -159,18 +156,30 @@ public partial class App : Control {
         _scoreKeeper.UpdateScore(blocksMergedChange.NewBlockValue);
 
         // and update the other
-        var targetGridNode = GetGridNode(blocksMergedChange.MergeReceiverPosition);
-        var blockToMergeTo = targetGridNode.GetNode<BlockNode>(BlockNodeName);
+        var mergeReceiverTargetGridNode = GetGridNode(blocksMergedChange.MergeReceiverTargetPosition);
 
-        var tween = TweenMovement(initialGridNode, targetGridNode, blockToMove.Value);
-        tween.Finished += () => { blockToMergeTo.Value = blocksMergedChange.NewBlockValue; };
+        var mergeReceiverInitialGridNode = GetGridNode(blocksMergedChange.MergeReceiverInitialPosition);
+        var mergeReceiverBlock = mergeReceiverInitialGridNode.GetNode<BlockNode>(BlockNodeName);
+        
+        if (mergeReceiverTargetGridNode != mergeReceiverInitialGridNode) {
+            mergeReceiverBlock.Visible = false;
+            mergeReceiverInitialGridNode.RemoveChild(mergeReceiverBlock);
+            mergeReceiverTargetGridNode.AddChild(mergeReceiverBlock);
+            var mergeReceiverTween = TweenMovement(mergeReceiverInitialGridNode, mergeReceiverTargetGridNode, mergeReceiverBlock.Value);
+            mergeReceiverTween.Finished += () => { mergeReceiverBlock.Visible = true; };
+        }
+        
+        var mergedBlockTween = TweenMovement(initialGridNode, mergeReceiverTargetGridNode, blockToMove.Value);
+        mergedBlockTween.Finished += () => { mergeReceiverBlock.Value = blocksMergedChange.NewBlockValue; };
 
         if (blocksMergedChange.NewBlockValue == 2048) {
+            GD.Print("game won");
             _banner.Show(true, _scoreKeeper.Score);
         }
     }
 
     private void HandleNoMovesLeft(NoMovesLeftChange noMovesLeftChange) {
+        GD.Print("No moves left, losing");
         _banner.Show(false, _scoreKeeper.Score);
     }
 

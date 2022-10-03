@@ -118,7 +118,7 @@ public class LogicTests {
             1
         );
     }
-    
+
     [Test]
     public void ShouldNotMoveAndSpawnBlocksWhenMovementIsNotPossible() {
         assertGrid(
@@ -148,15 +148,16 @@ public class LogicTests {
             new HashSet<BlockMovedChange>(),
             new HashSet<BlocksMergedChange> {
                 new() {
-                    MergeReceiverPosition = new GridPosition {  Row = 0, Column = 0},
+                    MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
+                    MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
                     NewBlockValue = 4,
-                    MergedBlockInitialPosition = new GridPosition {  Row = 0, Column = 1}
+                    MergedBlockInitialPosition = new GridPosition { Row = 0, Column = 1 }
                 }
             },
             1
         );
     }
-    
+
     [Test]
     public void ShouldMergeOnlyTwoBlocksWhenThereAreThreeBlocksInARow() {
         assertGrid(
@@ -175,15 +176,16 @@ public class LogicTests {
             },
             new HashSet<BlocksMergedChange> {
                 new() {
-                    MergeReceiverPosition = new GridPosition {  Row = 0, Column = 0},
+                    MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
+                    MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
                     NewBlockValue = 4,
-                    MergedBlockInitialPosition = new GridPosition {  Row = 0, Column = 1}
+                    MergedBlockInitialPosition = new GridPosition { Row = 0, Column = 1 }
                 }
             },
             1
         );
     }
-    
+
     [Test]
     public void ShouldMergeOnlyTwoBlocksWhenThereAreThreeBlocksInARowWithDifferentValues() {
         assertGrid(
@@ -202,17 +204,46 @@ public class LogicTests {
             },
             new HashSet<BlocksMergedChange> {
                 new() {
-                    MergeReceiverPosition = new GridPosition {  Row = 0, Column = 0},
+                    MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
+                    MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
                     NewBlockValue = 4,
-                    MergedBlockInitialPosition = new GridPosition {  Row = 0, Column = 1}
+                    MergedBlockInitialPosition = new GridPosition { Row = 0, Column = 1 }
                 }
             },
             1
         );
     }
-    
-    
-    
+
+    [Test]
+    public void ShouldDoTwoMergesInOneLine() {
+        assertGrid(
+            GridBuilder.BuildGrid(new[] {
+                2, 0, 0, 0,
+                2, 0, 0, 0,
+                2, 0, 0, 0,
+                2, 0, 0, 0
+            }),
+            MoveDirection.Up,
+            new HashSet<BlockMovedChange>(),
+            new HashSet<BlocksMergedChange> {
+                new() {
+                    MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
+                    MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
+                    NewBlockValue = 4,
+                    MergedBlockInitialPosition = new GridPosition { Row = 1, Column = 0 }
+                },
+                new() {
+                    MergeReceiverTargetPosition = new GridPosition { Row = 1, Column = 0 },
+                    MergeReceiverInitialPosition = new GridPosition { Row = 2, Column = 0 },
+                    NewBlockValue = 4,
+                    MergedBlockInitialPosition = new GridPosition { Row = 3, Column = 0 }
+                }
+            },
+            1
+        );
+    }
+
+
     private void assertGrid(
         List<List<LogicGrid.Cell>> grid,
         MoveDirection moveDirection,
@@ -227,15 +258,17 @@ public class LogicTests {
         var changes = logicGrid.UpdateWithMove(moveDirection);
 
         // then
-
+        
+        Console.WriteLine("Following test changes were detected");
         foreach (var change in changes) {
             Console.WriteLine(change);
         }
+        Console.WriteLine("OVER AND OUT");
         
         // todo common method for all types?
         var moveChanges = (from change in changes where change is BlockMovedChange select (BlockMovedChange)change)
             .ToHashSet();
-   
+
         Assert.IsTrue(expectedBlockMoveChanges.SetEquals(moveChanges));
 
         var mergeChanges = (from change in changes where change is BlocksMergedChange select (BlocksMergedChange)change)
