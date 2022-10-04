@@ -6,5 +6,3 @@
 - profile memory
 - godot warning
 - add playing on
-- sometimes there is discrepancy between grid visual representation and logical one. This makes game unplayable. Fix this.
-- sometimes blocks are merging when they should not

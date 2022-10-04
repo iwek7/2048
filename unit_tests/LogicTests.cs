@@ -3,16 +3,9 @@ using Logic;
 namespace unit_tests;
 
 public class LogicTests {
-    private TestRandom _testRng;
-
-    [SetUp]
-    public void Setup() {
-        _testRng = new TestRandom();
-    }
-
     [Test]
     public void ShouldMoveCellRight() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 2, 0, 0, 0,
                 0, 0, 0, 0,
@@ -33,7 +26,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMoveCellLeft() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 0, 0, 0, 2,
                 0, 0, 0, 0,
@@ -54,7 +47,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMoveCellDown() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 2, 0, 0, 0,
                 0, 0, 0, 0,
@@ -75,7 +68,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMoveCellUp() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 0, 0, 0, 0,
                 0, 0, 0, 0,
@@ -96,7 +89,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMoveMultipleBlocks() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 0, 0, 0, 0,
                 0, 0, 0, 0,
@@ -121,7 +114,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldNotMoveAndSpawnBlocksWhenMovementIsNotPossible() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 2, 2, 4, 2,
                 0, 0, 0, 0,
@@ -137,7 +130,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMergeTwoBlocks() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 2, 2, 0, 0,
                 0, 0, 0, 0,
@@ -160,7 +153,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMergeOnlyTwoBlocksWhenThereAreThreeBlocksInARow() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 2, 2, 2, 0,
                 0, 0, 0, 0,
@@ -188,7 +181,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMergeOnlyTwoBlocksWhenThereAreThreeBlocksInARowWithDifferentValues() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 2, 2, 4, 0,
                 0, 0, 0, 0,
@@ -216,7 +209,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldMergeOnlyTwoBlocksWhenThereAreThreeBlocksInARowWithDifferentValuesAndAllBlocksMove() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 0, 0, 0, 0,
                 0, 2, 0, 0,
@@ -244,7 +237,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldDoTwoMergesInOneLine() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 2, 0, 0, 0,
                 2, 0, 0, 0,
@@ -274,7 +267,7 @@ public class LogicTests {
 
     [Test]
     public void ShouldNotMergeBlocksOfDifferentValues() {
-        assertGrid(
+        AssertGrid(
             GridBuilder.BuildGrid(new[] {
                 0, 4, 2, 8,
                 0, 8, 8, 16,
@@ -296,23 +289,63 @@ public class LogicTests {
             1
         );
     }
+    
+    [Test]
+    public void ShouldMakeSureDeveloperIsNotAnIdiotAndGridIsNotChangedInIfConditionPls() {
+        // that's hack because it relies on knowing how blocks are spawned internally in logic
+        // but I would have to rebuild random interface and mock it in more explicit way to avoid it
+        // todo: take a look but probably not worth it
+        var rng = new TestRandom {
+            PresetRandomInt = 0
+        };
+        var grid = GridBuilder.BuildGrid(new[] {
+            8, 0, 0, 0,
+            32, 8, 0, 0,
+            0, 8, 0, 0,
+            0, 16, 0, 0
+        }, rng);
+        
+        AssertGrid(
+            grid,
+            MoveDirection.Up,
+            new HashSet<BlockMovedChange> {
+                new() {
+                    InitialPosition = new GridPosition { Row = 3, Column = 1 },
+                    TargetPosition = new GridPosition { Row = 1, Column = 1 }
+                }
+            },
+            new HashSet<BlocksMergedChange> {
+                new() {
+                    MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 1 },
+                    MergeReceiverInitialPosition = new GridPosition { Row = 1, Column = 1 },
+                    NewBlockValue = 16,
+                    MergedBlockInitialPosition = new GridPosition { Row = 2, Column = 1 }
+                }
+            },
+            1
+        );
+        
+        AssertGrid(
+            grid,
+            MoveDirection.Left,
+            new HashSet<BlockMovedChange>(),
+            new HashSet<BlocksMergedChange>(),
+            0
+        );
+    }
 
 
-    private void assertGrid(
-        List<List<LogicGrid.Cell>> grid,
+    private static void AssertGrid(
+        LogicGrid logicGrid,
         MoveDirection moveDirection,
         IReadOnlySet<BlockMovedChange> expectedBlockMoveChanges,
         IReadOnlySet<BlocksMergedChange> expectedMergeChanges,
         int expectedNumberOfSpawns
     ) {
-        // given
-        var logicGrid = new LogicGrid(grid, _testRng);
-
         // when
         var changes = logicGrid.UpdateWithMove(moveDirection);
 
         // then
-
         Console.WriteLine("Following test changes were detected");
         foreach (var change in changes) {
             Console.WriteLine(change);
@@ -351,7 +384,12 @@ internal class TestRandom : Random {
 }
 
 internal static class GridBuilder {
-    internal static List<List<LogicGrid.Cell>> BuildGrid(int[] schema) {
+
+    internal static LogicGrid BuildGrid(int[] schema) {
+        return BuildGrid(schema, new Random());
+    }
+
+    internal static LogicGrid BuildGrid(int[] schema, Random rng) {
         Assert.AreEqual(16, schema.Length);
 
         List<List<LogicGrid.Cell>> grid = new();
@@ -370,6 +408,6 @@ internal static class GridBuilder {
             grid.Add(row);
         }
 
-        return grid;
+        return new LogicGrid(grid, rng);
     }
 }

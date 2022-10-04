@@ -108,13 +108,14 @@ public class LogicGrid {
                 // last condition is to account for situation like 2 2 4, without this check first this will merge into 8 because 2 merges will happen
                 // this check does not allow merging one cell twice in one move
                 if (newRow.Count > 0 &&
-                    newRow.Last().Block.mergeWith(cell.Block)
+                    newRow.Last().Block.Value == cell.Block.Value
                     && (from change in changes
                         where change is BlocksMergedChange mergedChange &&
                               mergedChange.MergeReceiverTargetPosition == newRow.Last().GridPosition
                         select change).ToList().Count == 0) {
-                    // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions;
 
+                    newRow.Last().Block = new Block(cell.Block.Value * 2);
+                    
                     // now we need to check if merge receiver was moved, if yes then remove this move from list and instead
                     // use initial position of move as merge receiver initial position
                     // todo: rethink this ugly solution
@@ -250,20 +251,13 @@ public class LogicGrid {
         }
     }
 
+    // todo: this should be record maybe
     public class Block {
-        public int Value { get; private set; }
+        public int Value { get;}
 
         // todo: make static constructor for set types of blocks instead
         public Block(int value) {
             Value = value;
-        }
-
-        // true if merge happened
-        // false if not
-        internal bool mergeWith(Block other) {
-            if (other.Value != Value) return false;
-            Value += other.Value;
-            return true;
         }
     }
 }
