@@ -8,8 +8,9 @@ offset_right = 100.0
 offset_bottom = 100.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-color = Color(0.439216, 0.964706, 0.870588, 1)
+color = Color(1, 0.486275, 0.196078, 1)
 script = ExtResource("1_ob8oc")
+BlockValue = 9
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 1
@@ -26,6 +27,6 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 40
-text = "2048"
+text = "1024"
 horizontal_alignment = 1
 vertical_alignment = 1

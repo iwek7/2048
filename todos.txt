@@ -6,3 +6,4 @@
 - profile memory
 - godot warning
 - add playing on
+- remove debug logging, change logger to debug level somehow
