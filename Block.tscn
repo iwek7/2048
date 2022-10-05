@@ -8,7 +8,7 @@ offset_right = 100.0
 offset_bottom = 100.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-color = Color(1, 0.431373, 0.188235, 1)
+color = Color(0.439216, 0.964706, 0.870588, 1)
 script = ExtResource("1_ob8oc")
 
 [node name="Label" type="Label" parent="."]

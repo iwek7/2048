@@ -143,7 +143,7 @@ public class LogicTests {
                 new() {
                     MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
                     MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
-                    NewBlockValue = 4,
+                    NewBlockValue = BlockValue.Four,
                     MergedBlockInitialPosition = new GridPosition { Row = 0, Column = 1 }
                 }
             },
@@ -171,7 +171,7 @@ public class LogicTests {
                 new() {
                     MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
                     MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
-                    NewBlockValue = 4,
+                    NewBlockValue = BlockValue.Four,
                     MergedBlockInitialPosition = new GridPosition { Row = 0, Column = 1 }
                 }
             },
@@ -199,7 +199,7 @@ public class LogicTests {
                 new() {
                     MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
                     MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
-                    NewBlockValue = 4,
+                    NewBlockValue = BlockValue.Four,
                     MergedBlockInitialPosition = new GridPosition { Row = 0, Column = 1 }
                 }
             },
@@ -227,7 +227,7 @@ public class LogicTests {
                 new() {
                     MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 1 },
                     MergeReceiverInitialPosition = new GridPosition { Row = 1, Column = 1 },
-                    NewBlockValue = 4,
+                    NewBlockValue = BlockValue.Four,
                     MergedBlockInitialPosition = new GridPosition { Row = 2, Column = 1 }
                 }
             },
@@ -250,13 +250,13 @@ public class LogicTests {
                 new() {
                     MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 0 },
                     MergeReceiverInitialPosition = new GridPosition { Row = 0, Column = 0 },
-                    NewBlockValue = 4,
+                    NewBlockValue = BlockValue.Four,
                     MergedBlockInitialPosition = new GridPosition { Row = 1, Column = 0 }
                 },
                 new() {
                     MergeReceiverTargetPosition = new GridPosition { Row = 1, Column = 0 },
                     MergeReceiverInitialPosition = new GridPosition { Row = 2, Column = 0 },
-                    NewBlockValue = 4,
+                    NewBlockValue = BlockValue.Four,
                     MergedBlockInitialPosition = new GridPosition { Row = 3, Column = 0 }
                 }
             },
@@ -318,7 +318,7 @@ public class LogicTests {
                 new() {
                     MergeReceiverTargetPosition = new GridPosition { Row = 0, Column = 1 },
                     MergeReceiverInitialPosition = new GridPosition { Row = 1, Column = 1 },
-                    NewBlockValue = 16,
+                    NewBlockValue = BlockValue.Sixteen,
                     MergedBlockInitialPosition = new GridPosition { Row = 2, Column = 1 }
                 }
             },
@@ -399,7 +399,7 @@ internal static class GridBuilder {
                 var newCell = new LogicGrid.Cell(new GridPosition { Row = i, Column = j });
                 var schemaValue = schema[i * 4 + j];
                 if (schemaValue != 0) {
-                    newCell.assignBlock(new LogicGrid.Block(schemaValue));
+                    newCell.assignBlock(new LogicGrid.Block((BlockValue) schemaValue));
                 }
 
                 row.Add(newCell);

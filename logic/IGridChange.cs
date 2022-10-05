@@ -19,7 +19,7 @@ public record BlocksMergedChange : IGridChange {
     public GridPosition MergedBlockInitialPosition { get; init; }
     public GridPosition MergeReceiverTargetPosition { get; init; }
     public GridPosition MergeReceiverInitialPosition { get; init; }
-    public int NewBlockValue { get; init; }
+    public BlockValue NewBlockValue { get; init; }
     public IGridChange Transpose(IGridTransformer gridTransformer) {
         return new BlocksMergedChange {
             MergeReceiverInitialPosition = gridTransformer.TransposeGridPosition(MergeReceiverInitialPosition),
@@ -32,7 +32,7 @@ public record BlocksMergedChange : IGridChange {
 
 public record BlockSpawnedChange : IGridChange {
     public GridPosition NewBlockPosition { get; init; }
-    public int NewBlockValue { get; init; }
+    public BlockValue NewBlockValue { get; init; }
     public IGridChange Transpose(IGridTransformer gridTransformer) {
         throw new NotImplementedException();
     }

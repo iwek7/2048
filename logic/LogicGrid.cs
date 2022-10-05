@@ -10,7 +10,7 @@ public record GridPosition {
 
 public class LogicGrid {
     // todo: revert this to private
-    public List<List<Cell>> Grid { get; private set; } = new();
+    private List<List<Cell>> Grid { get; set; } = new();
     private readonly Random _rng;
 
 
@@ -114,7 +114,7 @@ public class LogicGrid {
                               mergedChange.MergeReceiverTargetPosition == newRow.Last().GridPosition
                         select change).ToList().Count == 0) {
 
-                    newRow.Last().Block = new Block(cell.Block.Value * 2);
+                    newRow.Last().Block = new Block((BlockValue)((int) cell.Block.Value * 2));
                     
                     // now we need to check if merge receiver was moved, if yes then remove this move from list and instead
                     // use initial position of move as merge receiver initial position
@@ -197,7 +197,7 @@ public class LogicGrid {
             throw new ArgumentException("Trying spawn new block but there are no empty cells");
         }
 
-        var newBlock = new Block(_rng.NextDouble() <= 0.9 ? 2 : 4);
+        var newBlock = new Block(_rng.NextDouble() <= 0.9 ? BlockValue.Two : BlockValue.Four);
         var cell = cells[_rng.Next(cells.Count)];
         cell.assignBlock(newBlock);
         return cell;
@@ -253,11 +253,25 @@ public class LogicGrid {
 
     // todo: this should be record maybe
     public class Block {
-        public int Value { get;}
+        public BlockValue Value { get;}
 
-        // todo: make static constructor for set types of blocks instead
-        public Block(int value) {
+        public Block(BlockValue value) {
             Value = value;
         }
     }
+}
+
+// todo add all possible numbers
+public enum BlockValue {
+    Two = 2,
+    Four = 4,
+    Eight = 8,
+    Sixteen = 16,
+    ThirtyTwo = 32,
+    SixtyFour = 64,
+    HundredAndTwentyEight = 128,
+    TwoHundredFiftySix = 256,
+    FiveHundredTwelve = 512,
+    ThousandTwentyFour = 1024,
+    TwoThousandFortyEight = 2048
 }

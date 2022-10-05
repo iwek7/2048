@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Godot;
 using Logic;
 
@@ -16,7 +15,7 @@ public partial class App : Control {
     private Banner _banner;
 
     // allow next move only when all animations of previous move finished
-    private int running = 0;
+    private int _running;
     private const float MoveAnimationTime = 0.2f;
     private const float SpawnAnimationTime = 0.2f;
     
@@ -46,7 +45,7 @@ public partial class App : Control {
     public override void _UnhandledInput(InputEvent inputEvent) {
         base._UnhandledInput(inputEvent);
         if (inputEvent is not InputEventKey { Pressed: true } keyboardEvent) return;
-        if (running > 0) {
+        if (_running > 0) {
             GD.Print("Animations are not finished and move is not enabled");
             return;
         }
@@ -122,11 +121,11 @@ public partial class App : Control {
         tween.TweenProperty(blockToTween, "position", GetInnerGridField(gridCellNode).GlobalPosition,
             SpawnAnimationTime);
 
-        running++;
+        _running++;
         tween.Finished += () => {
             RemoveChild(blockToTween);
             blockNode.Visible = true;
-            running--;
+            _running--;
         };
     }
 
@@ -153,7 +152,7 @@ public partial class App : Control {
         initialGridNode.RemoveChild(blockToMove);
         blockToMove.QueueFree();
 
-        _scoreKeeper.UpdateScore(blocksMergedChange.NewBlockValue);
+        _scoreKeeper.UpdateScore((int) blocksMergedChange.NewBlockValue);
 
         // and update the other
         var mergeReceiverTargetGridNode = GetGridNode(blocksMergedChange.MergeReceiverTargetPosition);
@@ -172,7 +171,7 @@ public partial class App : Control {
         var mergedBlockTween = TweenMovement(initialGridNode, mergeReceiverTargetGridNode, blockToMove.Value);
         mergedBlockTween.Finished += () => { mergeReceiverBlock.Value = blocksMergedChange.NewBlockValue; };
 
-        if (blocksMergedChange.NewBlockValue == 2048) {
+        if (blocksMergedChange.NewBlockValue == BlockValue.TwoThousandFortyEight) {
             GD.Print("game won");
             _banner.Show(true, _scoreKeeper.Score);
         }
@@ -183,8 +182,8 @@ public partial class App : Control {
         _banner.Show(false, _scoreKeeper.Score);
     }
 
-    private Tween TweenMovement(Node initialGridCell, Node targetGridCell, int tweenBlockValue) {
-        running++;
+    private Tween TweenMovement(Node initialGridCell, Node targetGridCell, BlockValue tweenBlockValue) {
+        _running++;
 
         var blockToTween = CreateBlockNode();
 
@@ -201,7 +200,7 @@ public partial class App : Control {
 
         tween.Finished += () => {
             RemoveChild(blockToTween);
-            running--;
+            _running--;
         };
         return tween;
     }
