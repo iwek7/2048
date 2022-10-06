@@ -8,17 +8,19 @@ using Logic;
 public partial class BlockNode : ColorRect {
     // todo: make this palette nicer 
     private static readonly Dictionary<BlockValue, Color> ColorMap = new() {
-        [Logic.BlockValue.Two] = new Color("#70f6de"),
-        [Logic.BlockValue.Four] = new Color("#00bae0"),
-        [Logic.BlockValue.Eight] = new Color("#0079d4"),
-        [Logic.BlockValue.Sixteen] = new Color("#182b9b"),
-        [Logic.BlockValue.ThirtyTwo] = new Color("#56279b"),
-        [Logic.BlockValue.SixtyFour] = new Color("#7c2098"),
-        [Logic.BlockValue.HundredAndTwentyEight] = new Color("#9b1893"),
-        [Logic.BlockValue.TwoHundredFiftySix] = new Color("#da0c79"),
-        [Logic.BlockValue.FiveHundredTwelve] = new Color("#ff4357"),
-        [Logic.BlockValue.ThousandTwentyFour] = new Color("#ff7c32"),
-        [Logic.BlockValue.TwoThousandFortyEight] = new Color("#ffb400")
+        [Logic.BlockValue.Two] = new Color("#EEF1FF"),
+        [Logic.BlockValue.Four] = new Color("#D2DAFF"),
+        [Logic.BlockValue.Eight] = new Color("#AAC4FF"),
+        [Logic.BlockValue.Sixteen] = new Color("#B1B2FF"),
+        
+        [Logic.BlockValue.ThirtyTwo] = new Color("#FFE6BC"),
+        [Logic.BlockValue.SixtyFour] = new Color("#C3B091"),
+        [Logic.BlockValue.HundredAndTwentyEight] = new Color("#8E806A"),
+        [Logic.BlockValue.TwoHundredFiftySix] = new Color("#615748"),
+        
+        [Logic.BlockValue.FiveHundredTwelve] = new Color("#ffc4c0"),
+        [Logic.BlockValue.ThousandTwentyFour] = new Color("#f28282"),
+        [Logic.BlockValue.TwoThousandFortyEight] = new Color("#eb4848")
     };
 
     private int _blockEnumValue = 0;

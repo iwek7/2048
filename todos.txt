@@ -1,4 +1,3 @@
-- color scheme sux
 - merged block should slightly grow and shrink to indicate successful merge
 - add readme with screenshot
 - block should appear after movement
@@ -7,3 +6,5 @@
 - godot warning
 - add playing on
 - remove debug logging, change logger to debug level somehow
+- get rid of startup error
+- ładnie zaokroąglić skraje bloków
