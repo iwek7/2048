@@ -6,7 +6,6 @@ using Logic;
 
 [Tool]
 public partial class BlockNode : ColorRect {
-    // todo: make this palette nicer 
     private static readonly Dictionary<BlockValue, Color> ColorMap = new() {
         [Logic.BlockValue.Two] = new Color("#EEF1FF"),
         [Logic.BlockValue.Four] = new Color("#D2DAFF"),
