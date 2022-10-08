@@ -18,7 +18,9 @@ public partial class App : Control {
     private int _running;
     private const float MoveAnimationTime = 0.2f;
     private const float SpawnAnimationTime = 0.2f;
-    
+    private const float MergeGrowAnimationTime = 0.15f;
+    private const float MergedBlockGrowth = 0.1f;
+
     // Called when the node enters the scene tree for the first time.
     public override void _Ready() {
         _startGameButton = (Button)FindChild("RestartGameButton");
@@ -152,24 +154,53 @@ public partial class App : Control {
         initialGridNode.RemoveChild(blockToMove);
         blockToMove.QueueFree();
 
-        _scoreKeeper.UpdateScore((int) blocksMergedChange.NewBlockValue);
+        _scoreKeeper.UpdateScore((int)blocksMergedChange.NewBlockValue);
 
         // and update the other
         var mergeReceiverTargetGridNode = GetGridNode(blocksMergedChange.MergeReceiverTargetPosition);
 
         var mergeReceiverInitialGridNode = GetGridNode(blocksMergedChange.MergeReceiverInitialPosition);
         var mergeReceiverBlock = mergeReceiverInitialGridNode.GetNode<BlockNode>(BlockNodeName);
-        
+
         if (mergeReceiverTargetGridNode != mergeReceiverInitialGridNode) {
             mergeReceiverBlock.Visible = false;
             mergeReceiverInitialGridNode.RemoveChild(mergeReceiverBlock);
             mergeReceiverTargetGridNode.AddChild(mergeReceiverBlock);
-            var mergeReceiverTween = TweenMovement(mergeReceiverInitialGridNode, mergeReceiverTargetGridNode, mergeReceiverBlock.Value);
+            var mergeReceiverTween = TweenMovement(mergeReceiverInitialGridNode, mergeReceiverTargetGridNode,
+                mergeReceiverBlock.Value);
             mergeReceiverTween.Finished += () => { mergeReceiverBlock.Visible = true; };
         }
-        
+
         var mergedBlockTween = TweenMovement(initialGridNode, mergeReceiverTargetGridNode, blockToMove.Value);
-        mergedBlockTween.Finished += () => { mergeReceiverBlock.Value = blocksMergedChange.NewBlockValue; };
+        mergedBlockTween.Finished += () => {
+            mergeReceiverBlock.Value = blocksMergedChange.NewBlockValue;
+
+            // now instead of showing final block show animated block so that it slightly grows and shrinks
+            // to indicate successful merge
+            mergeReceiverBlock.Visible = false;
+
+            _running++;
+            var growingBlock = CreateBlockNode();
+            growingBlock.Position = GetInnerGridField(mergeReceiverTargetGridNode).GlobalPosition;
+            AddChild(growingBlock);
+            growingBlock.Value = blocksMergedChange.NewBlockValue;
+
+            growingBlock.Size = GetInnerGridField(mergeReceiverTargetGridNode).Size.ToVector2I();
+            var growthTween = CreateTween();
+            growthTween.TweenProperty(growingBlock, "scale", new Vector2(1 + MergedBlockGrowth, 1 + MergedBlockGrowth),
+                MergeGrowAnimationTime / 2);
+            growthTween.Parallel().TweenProperty(growingBlock, "position",
+                GetInnerGridField(mergeReceiverTargetGridNode).GlobalPosition -
+                MergedBlockGrowth / 2 * growingBlock.Size, MergeGrowAnimationTime / 2);
+            growthTween.TweenProperty(growingBlock, "scale", Vector2.One, MergeGrowAnimationTime / 2);
+            growthTween.Parallel().TweenProperty(growingBlock, "position",
+                GetInnerGridField(mergeReceiverTargetGridNode).GlobalPosition, MergeGrowAnimationTime / 2);
+            growthTween.Finished += () => {
+                RemoveChild(growingBlock);
+                _running--;
+                mergeReceiverBlock.Visible = true;
+            };
+        };
 
         if (blocksMergedChange.NewBlockValue == BlockValue.TwoThousandFortyEight) {
             GD.Print("game won");

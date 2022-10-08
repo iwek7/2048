@@ -1,4 +1,3 @@
-- merged block should slightly grow and shrink to indicate successful merge
 - add readme with screenshot
 - block should appear after movement
 - code todos
@@ -8,3 +7,5 @@
 - remove debug logging, change logger to debug level somehow
 - get rid of startup error
 - ładnie zaokroąglić skraje bloków
+- can colors be resources?
+- try to simplify app.cs code
