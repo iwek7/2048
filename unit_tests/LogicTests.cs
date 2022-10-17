@@ -399,7 +399,7 @@ internal static class GridBuilder {
                 var newCell = new LogicGrid.Cell(new GridPosition { Row = i, Column = j });
                 var schemaValue = schema[i * 4 + j];
                 if (schemaValue != 0) {
-                    newCell.assignBlock(new LogicGrid.Block((BlockValue) schemaValue));
+                    newCell.AssignBlockValue((BlockValue) schemaValue);
                 }
 
                 row.Add(newCell);

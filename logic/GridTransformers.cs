@@ -18,7 +18,7 @@ internal class LeftSideGridTransformer : IGridTransformer {
                 };
                 var newCell = new LogicGrid.Cell(newCellGridPosition);
                 if (!grid[rowIdx][colIdx].IsEmpty()) {
-                    newCell.assignBlock(grid[rowIdx][colIdx].Block);
+                    newCell.AssignBlockValue(grid[rowIdx][colIdx].BlockValue);
                 }
 
                 newRow.Add(newCell);
@@ -48,7 +48,7 @@ internal class RightSideGridTransformer : IGridTransformer {
                 };
                 var newCell = new LogicGrid.Cell(newCellGridPosition);
                 if (!grid[rowIdx][colIdx].IsEmpty()) {
-                    newCell.assignBlock(grid[rowIdx][colIdx].Block);
+                    newCell.AssignBlockValue(grid[rowIdx][colIdx].BlockValue);
                 }
 
                 newRow.Add(newCell);

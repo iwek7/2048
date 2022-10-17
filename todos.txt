@@ -7,3 +7,6 @@
 - ładnie zaokroąglić skraje bloków
 - can colors be resources?
 - try to simplify app.cs code
+- think of some solution to ensure in type system that cell has or has not value (classes like EmptyCell, CellWithBlock come to mind)
+- fix intellij issues
+- fix startup error
