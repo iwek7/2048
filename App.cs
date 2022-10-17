@@ -34,8 +34,7 @@ public partial class App : Control {
         _banner.RestartButtonClicked += HandleRestartButtonClicked;
         _banner.QuitButtonClicked += () => { GetTree().Quit(); };
 
-        // only for testing
-        // todo: remove
+        // only for testing, those buttons should be hidden
         ((Button)FindChild("TestLoseButton")).Pressed += () => { _banner.Show(false, _scoreKeeper.Score); };
         ((Button)FindChild("TestWinButton")).Pressed += () => { _banner.Show(true, _scoreKeeper.Score); };
 

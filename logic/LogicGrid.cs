@@ -3,7 +3,6 @@ namespace Logic;
 using Grid = List<List<LogicGrid.Cell>>;
 
 public record GridPosition {
-    // todo use uint here
     public int Row { get; init; }
     public int Column { get; init; }
 }
@@ -12,7 +11,6 @@ public class LogicGrid {
     // todo: revert this to private
     private List<List<Cell>> Grid { get; set; } = new();
     private readonly Random _rng;
-
 
     public LogicGrid(int gridDimension, Random rng) {
         _rng = rng;
@@ -113,9 +111,8 @@ public class LogicGrid {
                         where change is BlocksMergedChange mergedChange &&
                               mergedChange.MergeReceiverTargetPosition == newRow.Last().GridPosition
                         select change).ToList().Count == 0) {
+                    newRow.Last().Block = new Block { Value = (BlockValue)((int)cell.Block.Value * 2) };
 
-                    newRow.Last().Block = new Block((BlockValue)((int) cell.Block.Value * 2));
-                    
                     // now we need to check if merge receiver was moved, if yes then remove this move from list and instead
                     // use initial position of move as merge receiver initial position
                     // todo: rethink this ugly solution
@@ -131,8 +128,7 @@ public class LogicGrid {
                     if (mergeReceiverMove != null) {
                         changes.Remove(mergeReceiverMove);
                         mergeReceiverInitialPosition = mergeReceiverMove.InitialPosition;
-                    }
-                    else {
+                    } else {
                         mergeReceiverInitialPosition = newRow.Last().GridPosition;
                     }
 
@@ -144,8 +140,7 @@ public class LogicGrid {
                             NewBlockValue = newRow.Last().Block.Value
                         }
                     );
-                }
-                else {
+                } else {
                     var newCell = new Cell(new GridPosition {
                         Row = rowIdx,
                         Column = newRow.Count
@@ -197,7 +192,7 @@ public class LogicGrid {
             throw new ArgumentException("Trying spawn new block but there are no empty cells");
         }
 
-        var newBlock = new Block(_rng.NextDouble() <= 0.9 ? BlockValue.Two : BlockValue.Four);
+        var newBlock = new Block { Value = _rng.NextDouble() <= 0.9 ? BlockValue.Two : BlockValue.Four };
         var cell = cells[_rng.Next(cells.Count)];
         cell.assignBlock(newBlock);
         return cell;
@@ -251,13 +246,9 @@ public class LogicGrid {
         }
     }
 
-    // todo: this should be record maybe
-    public class Block {
-        public BlockValue Value { get;}
-
-        public Block(BlockValue value) {
-            Value = value;
-        }
+    // todo: this is not needed probably, using BlockValue is enough
+    public record Block {
+        public BlockValue Value { get; init; }
     }
 }
 
