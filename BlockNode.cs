@@ -43,6 +43,15 @@ public partial class BlockNode : ColorRect {
         set {
             _value = value;
             Color = ColorMap[value];
+            if (Engine.IsEditorHint() && _label == null) {
+                // I think when running in tool mode this setter is called before this object is _ready
+                // so that _label is not assigned.
+                // Therefore this early return avoids ugly error in editor output when opening this scene.
+                // Issue fixes itself when _ready is called eventually.
+                // This situation should not happen in non-tool mode.
+                return;
+            }
+            
             _label.Text = ((int)value).ToString();
         }
     }

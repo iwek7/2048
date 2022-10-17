@@ -4,7 +4,6 @@
 - godot warning
 - add playing on
 - remove debug logging, change logger to debug level somehow
-- get rid of startup error
 - ładnie zaokroąglić skraje bloków
 - can colors be resources?
 - try to simplify app.cs code
