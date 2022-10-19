@@ -289,7 +289,7 @@ public class LogicTests {
             1
         );
     }
-    
+
     [Test]
     public void ShouldMakeSureDeveloperIsNotAnIdiotAndGridIsNotChangedInIfConditionPls() {
         // that's hack because it relies on knowing how blocks are spawned internally in logic
@@ -304,7 +304,7 @@ public class LogicTests {
             0, 8, 0, 0,
             0, 16, 0, 0
         }, rng);
-        
+
         AssertGrid(
             grid,
             MoveDirection.Up,
@@ -324,7 +324,7 @@ public class LogicTests {
             },
             1
         );
-        
+
         AssertGrid(
             grid,
             MoveDirection.Left,
@@ -384,7 +384,6 @@ internal class TestRandom : Random {
 }
 
 internal static class GridBuilder {
-
     internal static LogicGrid BuildGrid(int[] schema) {
         return BuildGrid(schema, new Random());
     }
@@ -392,17 +391,18 @@ internal static class GridBuilder {
     internal static LogicGrid BuildGrid(int[] schema, Random rng) {
         Assert.AreEqual(16, schema.Length);
 
-        List<List<LogicGrid.Cell>> grid = new();
+        List<List<LogicGrid.ICell>> grid = new();
         for (var i = 0; i < 4; i++) {
-            List<LogicGrid.Cell> row = new();
+            List<LogicGrid.ICell> row = new();
             for (var j = 0; j < 4; j++) {
-                var newCell = new LogicGrid.Cell(new GridPosition { Row = i, Column = j });
+                var gridPosition = new GridPosition { Row = i, Column = j };
                 var schemaValue = schema[i * 4 + j];
                 if (schemaValue != 0) {
-                    newCell.AssignBlockValue((BlockValue) schemaValue);
+                    row.Add(new LogicGrid.CellWithBlock
+                        { GridPosition = gridPosition, BlockValue = (BlockValue)schemaValue });
+                } else {
+                    row.Add(new LogicGrid.EmptyCell { GridPosition = gridPosition });
                 }
-
-                row.Add(newCell);
             }
 
             grid.Add(row);

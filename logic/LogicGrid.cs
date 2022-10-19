@@ -1,6 +1,8 @@
 namespace Logic;
 
-using Grid = List<List<LogicGrid.Cell>>;
+// todo: is it possible to make this alias global to use it in unit tests and other files?
+// todo: Right now there is code duplication between this place and transformers file
+using Grid = List<List<LogicGrid.ICell>>;
 
 public record GridPosition {
     public int Row { get; init; }
@@ -9,22 +11,22 @@ public record GridPosition {
 
 public class LogicGrid {
     // todo: revert this to private
-    private List<List<Cell>> Grid { get; set; } = new();
+    private Grid Grid { get; set; } = new();
     private readonly Random _rng;
 
     public LogicGrid(int gridDimension, Random rng) {
         _rng = rng;
         for (var i = 0; i < gridDimension; i++) {
-            List<Cell> row = new();
+            List<ICell> row = new();
             for (var j = 0; j < gridDimension; j++) {
-                row.Add(new Cell(new GridPosition { Row = i, Column = j }));
+                row.Add(new EmptyCell { GridPosition = new GridPosition { Row = i, Column = j } });
             }
 
             Grid.Add(row);
         }
     }
 
-    public LogicGrid(List<List<Cell>> grid, Random rng) {
+    public LogicGrid(Grid grid, Random rng) {
         Grid = grid;
         _rng = rng;
     }
@@ -34,7 +36,7 @@ public class LogicGrid {
         var cellWithSpawn = SpawnNewBlock();
         return new BlockSpawnedChange {
             NewBlockPosition = cellWithSpawn.GridPosition,
-            NewBlockValue = cellWithSpawn.BlockValue.Value
+            NewBlockValue = cellWithSpawn.BlockValue
         };
     }
 
@@ -52,7 +54,7 @@ public class LogicGrid {
                 NewBlockPosition = cellWithSpawn.GridPosition,
                 // ReSharper disable once PossibleInvalidOperationException
                 // We just spawned cell with value so that it will never be null.
-                NewBlockValue = (BlockValue) cellWithSpawn.BlockValue
+                NewBlockValue = (BlockValue)cellWithSpawn.BlockValue
             });
         }
 
@@ -102,29 +104,28 @@ public class LogicGrid {
         List<IGridChange> changes = new();
         Grid newGrid = new();
         for (var rowIdx = 0; rowIdx < grid.Count; rowIdx++) {
-            List<Cell> newRow = new();
-            foreach (var cell in grid[rowIdx].Where(cell => !cell.IsEmpty())) {
+            List<CellWithBlock> newFilledRow = new();
+            foreach (var cell in from cell in grid[rowIdx] where cell is CellWithBlock select (CellWithBlock)cell) {
                 // try to merge
                 // last condition is to account for situation like 2 2 4, without this check first this will merge into 8 because 2 merges will happen
                 // this check does not allow merging one cell twice in one move
-                if (newRow.Count > 0 &&
-                    newRow.Last().BlockValue == cell.BlockValue
+                if (newFilledRow.Count > 0 &&
+                    newFilledRow.Last().BlockValue == cell.BlockValue
                     && (from change in changes
                         where change is BlocksMergedChange mergedChange &&
-                              mergedChange.MergeReceiverTargetPosition == newRow.Last().GridPosition
+                              mergedChange.MergeReceiverTargetPosition == newFilledRow.Last().GridPosition
                         select change).ToList().Count == 0) {
-                    
-                    // ReSharper disable once PossibleInvalidOperationException
-                    // Block value here is never null because new row contains only cells with not null block values.
-                    // This possible to ensure this is never using type system but probably not worth the complication.
-                    newRow.Last().BlockValue = (BlockValue)((int)cell.BlockValue.Value * 2);
+                    // replace last added block with merged one
+                    var mergedCell = newFilledRow.Last() with { BlockValue = (BlockValue)((int)cell.BlockValue * 2) };
+                    newFilledRow.RemoveAt(newFilledRow.Count - 1);
+                    newFilledRow.Add(mergedCell);
 
                     // now we need to check if merge receiver was moved, if yes then remove this move from list and instead
                     // use initial position of move as merge receiver initial position
                     // todo: rethink this ugly solution
                     var mergeReceiverMove = (BlockMovedChange)changes.FirstOrDefault(change =>
                         change is BlockMovedChange moveChange &&
-                        moveChange.TargetPosition == newRow.Last().GridPosition, null);
+                        moveChange.TargetPosition == newFilledRow.Last().GridPosition, null);
 
                     foreach (var change in changes) {
                         Console.WriteLine(change);
@@ -135,27 +136,28 @@ public class LogicGrid {
                         changes.Remove(mergeReceiverMove);
                         mergeReceiverInitialPosition = mergeReceiverMove.InitialPosition;
                     } else {
-                        mergeReceiverInitialPosition = newRow.Last().GridPosition;
+                        mergeReceiverInitialPosition = newFilledRow.Last().GridPosition;
                     }
 
                     changes.Add(
                         new BlocksMergedChange {
                             MergeReceiverInitialPosition = mergeReceiverInitialPosition,
-                            MergeReceiverTargetPosition = newRow.Last().GridPosition,
+                            MergeReceiverTargetPosition = newFilledRow.Last().GridPosition,
                             MergedBlockInitialPosition = cell.GridPosition,
                             // ReSharper disable once PossibleInvalidOperationException
                             // Block value here is never null because new row contains only cells with not null block values.
                             // This possible to ensure this is never using type system but probably not worth the complication.
-                            NewBlockValue = (BlockValue) newRow.Last().BlockValue
+                            NewBlockValue = newFilledRow.Last().BlockValue
                         }
                     );
                 } else {
-                    var newCell = new Cell(new GridPosition {
-                        Row = rowIdx,
-                        Column = newRow.Count
-                    });
-                    newCell.AssignBlockValue(cell.BlockValue);
-                    newRow.Add(newCell);
+                    var newCell = cell with {
+                        GridPosition = new GridPosition {
+                            Row = rowIdx,
+                            Column = newFilledRow.Count
+                        }
+                    };
+                    newFilledRow.Add(newCell);
                     if (cell.GridPosition != newCell.GridPosition) {
                         // we need to invoke event using correct values of initial grid, so we need to reverse transposition of positions
                         changes.Add(new BlockMovedChange {
@@ -168,11 +170,14 @@ public class LogicGrid {
             }
 
             // fill new row with empty cells
+            var newRow = newFilledRow.Cast<ICell>().ToList();
             while (newRow.Count < grid[rowIdx].Count) {
-                newRow.Add(new Cell(new GridPosition {
-                    Row = rowIdx,
-                    Column = newRow.Count
-                }));
+                newRow.Add(new EmptyCell {
+                    GridPosition = new GridPosition {
+                        Row = rowIdx,
+                        Column = newRow.Count
+                    }
+                });
             }
 
             newGrid.Add(newRow);
@@ -193,28 +198,31 @@ public class LogicGrid {
                ApplyMoveWithTransforms(MoveDirection.Down, Grid).GridChanges.Count == 0;
     }
 
+
     // it returns cell in which block was spawned
-    private Cell SpawnNewBlock() {
-        var cells = GetEmptyCells();
-        if (cells.Count == 0) {
+    private CellWithBlock SpawnNewBlock() {
+        var emptyCells = GetEmptyCells();
+        if (emptyCells.Count == 0) {
             // todo read some guide which exception to throw
             throw new ArgumentException("Trying spawn new block but there are no empty cells");
         }
 
-        var newBlockValue =_rng.NextDouble() <= 0.9 ? BlockValue.Two : BlockValue.Four;
-        var cell = cells[_rng.Next(cells.Count)];
-        cell.AssignBlockValue(newBlockValue);
-        return cell;
+        var newBlockValue = _rng.NextDouble() <= 0.9 ? BlockValue.Two : BlockValue.Four;
+        var cellToSpawnBlockIn = emptyCells[_rng.Next(emptyCells.Count)];
+        var cellWithBlock = cellToSpawnBlockIn.withBlockValue(newBlockValue);
+        Grid[cellToSpawnBlockIn.GridPosition.Row][cellToSpawnBlockIn.GridPosition.Column] = cellWithBlock;
+        return cellWithBlock;
     }
 
-    private List<Cell> GetEmptyCells() {
-        return (from row in Grid from cell in row where cell.IsEmpty() select cell).ToList();
+    private List<EmptyCell> GetEmptyCells() {
+        return (from row in Grid from cell in row where cell is EmptyCell select (EmptyCell)cell).ToList();
     }
 
     private void DebugPrintGrid() {
         foreach (var row in Grid) {
-            foreach (var col in row) {
-                Console.Write($"{col.BlockValue ?? 0} ");
+            foreach (var cell in row) {
+                var blockValue = cell is CellWithBlock cellWithBlock ? (int)cellWithBlock.BlockValue : 0;
+                Console.Write($"{blockValue} ");
             }
 
             Console.Write("\n");
@@ -233,41 +241,30 @@ public class LogicGrid {
         }
     }
 
-    public class Cell {
+    public interface ICell {
         public GridPosition GridPosition { get; }
-        public BlockValue? BlockValue;
+        public ICell WithPosition(GridPosition position);
+    }
 
-        public Cell(GridPosition gridPosition) {
-            GridPosition = gridPosition;
+    public record EmptyCell : ICell {
+        public GridPosition GridPosition { get; init; }
+
+        public CellWithBlock withBlockValue(BlockValue blockValue) {
+            return new CellWithBlock { GridPosition = GridPosition, BlockValue = blockValue };
         }
 
-        internal bool IsEmpty() {
-            return BlockValue == null;
-        }
-
-        // todo: research nullability
-        public void AssignBlockValue(BlockValue? block) {
-            if (BlockValue != null) {
-                throw new ArgumentException($"Trying to put block into not empty grid cell {GridPosition}");
-            }
-
-            BlockValue = block;
+        public ICell WithPosition(GridPosition position) {
+            return new EmptyCell { GridPosition = position };
         }
     }
 
-}
+    public record CellWithBlock : ICell {
+        public GridPosition GridPosition { get; init; }
 
-// todo add all possible numbers
-public enum BlockValue {
-    Two = 2,
-    Four = 4,
-    Eight = 8,
-    Sixteen = 16,
-    ThirtyTwo = 32,
-    SixtyFour = 64,
-    HundredAndTwentyEight = 128,
-    TwoHundredFiftySix = 256,
-    FiveHundredTwelve = 512,
-    ThousandTwentyFour = 1024,
-    TwoThousandFortyEight = 2048
+        public BlockValue BlockValue { get; init; }
+
+        public ICell WithPosition(GridPosition position) {
+            return this with { GridPosition = position };
+        }
+    }
 }

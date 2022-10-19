@@ -1,5 +1,5 @@
 namespace Logic; 
-using Grid = List<List<LogicGrid.Cell>>;
+using Grid = List<List<LogicGrid.ICell>>;
 
 public interface IGridTransformer {
     Grid TransposeGrid(Grid grid);
@@ -10,17 +10,14 @@ internal class LeftSideGridTransformer : IGridTransformer {
     public Grid TransposeGrid(Grid grid) {
         Grid newGrid = new();
         for (var colIdx = grid.Count - 1; colIdx >= 0; colIdx--) {
-            List<LogicGrid.Cell> newRow = new();
+            List<LogicGrid.ICell> newRow = new();
             for (var rowIdx = 0; rowIdx < grid[colIdx].Count; rowIdx++) {
                 var newCellGridPosition = new GridPosition {
                     Row = grid.Count - (colIdx + 1),
                     Column = rowIdx
                 };
-                var newCell = new LogicGrid.Cell(newCellGridPosition);
-                if (!grid[rowIdx][colIdx].IsEmpty()) {
-                    newCell.AssignBlockValue(grid[rowIdx][colIdx].BlockValue);
-                }
 
+                var newCell = grid[rowIdx][colIdx].WithPosition(newCellGridPosition);
                 newRow.Add(newCell);
             }
 
@@ -40,17 +37,13 @@ internal class RightSideGridTransformer : IGridTransformer {
     public Grid TransposeGrid(Grid grid) {
         Grid newGrid = new();
         for (var colIdx = 0; colIdx < grid.Count; colIdx++) {
-            List<LogicGrid.Cell> newRow = new();
+            List<LogicGrid.ICell> newRow = new();
             for (var rowIdx = grid[colIdx].Count - 1; rowIdx >= 0; rowIdx--) {
                 var newCellGridPosition = new GridPosition {
                     Row = colIdx,
                     Column = grid.Count - (rowIdx + 1)
                 };
-                var newCell = new LogicGrid.Cell(newCellGridPosition);
-                if (!grid[rowIdx][colIdx].IsEmpty()) {
-                    newCell.AssignBlockValue(grid[rowIdx][colIdx].BlockValue);
-                }
-
+                var newCell = grid[rowIdx][colIdx].WithPosition(newCellGridPosition);
                 newRow.Add(newCell);
             }
 

@@ -1,7 +1,4 @@
 using Godot;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Logic;
 
 [Tool]
@@ -51,8 +48,15 @@ public partial class BlockNode : ColorRect {
                 // This situation should not happen in non-tool mode.
                 return;
             }
+
+            // for some weird reason when running game editor keeps on setting exported value of node that is not in scene
+            // but is used in editor to edit scene
+            // since node in never readied _label is never assigned and thus is null
+            // it looks like engine bug
+            if (_label != null) {
+                _label.Text = ((int)value).ToString();
+            }
             
-            _label.Text = ((int)value).ToString();
         }
     }
 
