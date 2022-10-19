@@ -52,9 +52,7 @@ public class LogicGrid {
             var cellWithSpawn = SpawnNewBlock();
             moveResult.GridChanges.Add(new BlockSpawnedChange {
                 NewBlockPosition = cellWithSpawn.GridPosition,
-                // ReSharper disable once PossibleInvalidOperationException
-                // We just spawned cell with value so that it will never be null.
-                NewBlockValue = (BlockValue)cellWithSpawn.BlockValue
+                NewBlockValue = cellWithSpawn.BlockValue
             });
         }
 
@@ -209,7 +207,7 @@ public class LogicGrid {
 
         var newBlockValue = _rng.NextDouble() <= 0.9 ? BlockValue.Two : BlockValue.Four;
         var cellToSpawnBlockIn = emptyCells[_rng.Next(emptyCells.Count)];
-        var cellWithBlock = cellToSpawnBlockIn.withBlockValue(newBlockValue);
+        var cellWithBlock = cellToSpawnBlockIn.WithBlockValue(newBlockValue);
         Grid[cellToSpawnBlockIn.GridPosition.Row][cellToSpawnBlockIn.GridPosition.Column] = cellWithBlock;
         return cellWithBlock;
     }
@@ -224,7 +222,6 @@ public class LogicGrid {
                 var blockValue = cell is CellWithBlock cellWithBlock ? (int)cellWithBlock.BlockValue : 0;
                 Console.Write($"{blockValue} ");
             }
-
             Console.Write("\n");
         }
     }
@@ -249,7 +246,7 @@ public class LogicGrid {
     public record EmptyCell : ICell {
         public GridPosition GridPosition { get; init; }
 
-        public CellWithBlock withBlockValue(BlockValue blockValue) {
+        public CellWithBlock WithBlockValue(BlockValue blockValue) {
             return new CellWithBlock { GridPosition = GridPosition, BlockValue = blockValue };
         }
 
